@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>edge·print</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080a0e;--bg2:#0d1017;--bg3:#111520;--bg4:#161b28;--bg5:#1b2133;
+  --gold:#c9a84c;--gold2:#e8b84b;
+  --red2:#e74c3c;--red3:#ff6b5b;
+  --green2:#22a05a;--green3:#2ecc71;
+  --blue3:#5dade2;--orange2:#e67e22;--orange3:#f39c12;
+  --cream:#c8c3b8;--white:#edeae2;--muted:#3d4558;--muted2:#5a6480;
+  --border:#1e2535;--border2:#2a3348;
+  --fd:'Syne',sans-serif;--fm:'DM Mono',monospace;--fb:'DM Sans',sans-serif;--fs:'DM Serif Display',Georgia,serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--cream);font-family:var(--fb);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.025) 2px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:999}
+
+/* ── SHELL ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* ── SLIM SIDEBAR ── */
+.sidebar{
+  width:52px;flex-shrink:0;background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;
+  padding:16px 0;gap:4px;position:relative
+}
+.sidebar::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.sb-logo{
+  font-family:var(--fs);font-size:11px;font-style:italic;
+  color:var(--gold);writing-mode:vertical-rl;text-orientation:mixed;
+  letter-spacing:1px;margin-bottom:18px;transform:rotate(180deg);
+  user-select:none
+}
+.sb-logo span{font-style:normal;color:rgba(201,168,76,.4)}
+.si{
+  width:36px;height:36px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .2s;position:relative;
+  background:transparent;border:1px solid transparent
+}
+.si:hover{background:rgba(255,255,255,.03);border-color:var(--border)}
+.si.active{background:rgba(201,168,76,.1);border-color:rgba(201,168,76,.2)}
+.si svg{width:16px;height:16px;stroke:var(--muted2);fill:none;stroke-width:1.5;flex-shrink:0}
+.si.active svg{stroke:var(--gold)}
+.si-tip{
+  position:absolute;left:46px;top:50%;transform:translateY(-50%);
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:6px;padding:5px 10px;
+  font-family:var(--fm);font-size:9px;color:var(--cream);letter-spacing:.5px;
+  white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50
+}
+.si:hover .si-tip{opacity:1}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── TOP BAR (Option D style) ── */
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:0 32px;height:54px;display:flex;align-items:center;
+  justify-content:space-between;flex-shrink:0
+}
+.brand{font-family:var(--fs);font-size:22px;font-style:italic;color:var(--white);letter-spacing:-.5px;user-select:none}
+.brand span{color:var(--gold);font-style:normal}
+.topnav{display:flex;gap:0}
+.tn{
+  font-family:var(--fm);font-size:10px;letter-spacing:.5px;
+  color:var(--muted);padding:0 14px;height:54px;
+  display:flex;align-items:center;cursor:pointer;
+  border-bottom:2px solid transparent;transition:all .2s
+}
+.tn:hover{color:var(--cream)}
+.tn.active{color:var(--gold);border-bottom-color:var(--gold)}
+.topbar-meta{font-family:var(--fm);font-size:9px;color:var(--muted);letter-spacing:.5px}
+.topbar-meta span{color:var(--gold)}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;overflow-x:hidden}
+.view{display:none;padding:28px 32px;animation:fi .2s ease}
+.view.active{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── PAGE HDR ── */
+.ph{margin-bottom:24px;display:flex;align-items:flex-end;justify-content:space-between}
+.pt{font-family:var(--fs);font-size:26px;font-weight:400;font-style:italic;color:var(--white);letter-spacing:-.5px}
+.ps{font-family:var(--fm);font-size:9px;color:var(--muted2);letter-spacing:1px;margin-top:4px}
+
+/* ── KPI ── */
+.ks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:24px}
+.kpi{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px;position:relative;overflow:hidden}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kpi.go::before{background:var(--gold)}.kpi.re::before{background:var(--red2)}
+.kpi.gr::before{background:var(--green2)}.kpi.bl::before{background:var(--blue3)}.kpi.or::before{background:var(--orange2)}
+.kl{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:var(--muted2);margin-bottom:8px}
+.kv{font-family:var(--fm);font-size:17px;font-weight:500;letter-spacing:.5px}
+.kpi.go .kv{color:var(--cream)}.kpi.re .kv{color:var(--red3)}.kpi.gr .kv{color:var(--green3)}.kpi.bl .kv{color:var(--cream)}.kpi.or .kv{color:var(--cream)}
+.kd{font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:4px}
+
+/* ── SEC HDR ── */
+.sh{display:flex;align-items:center;gap:8px;font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--muted2);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.sh::before{content:'';width:2px;height:10px;background:var(--gold);border-radius:1px;flex-shrink:0}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px}
+
+/* ── DANGER ── */
+.dg{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.ds{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:11px 14px;display:flex;align-items:center;gap:12px}
+.ds.danger{border-color:rgba(231,76,60,.3);background:rgba(192,57,43,.05)}
+.ds.safe{border-color:rgba(34,160,90,.2)}.ds.warn{border-color:rgba(243,156,18,.2)}
+.dd{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0}
+.ds.danger .dd{background:var(--red3)}.ds.safe .dd{background:var(--green3)}.ds.warn .dd{background:var(--orange3)}
+.db{flex:1}.dl{font-size:12px;color:var(--cream)}.dsub{font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:2px}
+.dc{font-family:var(--fm);font-size:16px;font-weight:500;color:var(--muted);letter-spacing:.5px}
+.ds.danger .dc{color:var(--red3)}.ds.safe .dc{color:var(--green3)}.ds.warn .dc{color:var(--orange3)}
+.ab{background:rgba(192,57,43,.08);border:1px solid rgba(231,76,60,.25);border-left:2px solid var(--red2);border-radius:8px;padding:10px 14px;font-size:11px;color:var(--red3);margin-bottom:18px;display:none;font-family:var(--fm)}
+.ab.show{display:block}
+
+/* ── FLIP CARD ── */
+.fc{background:var(--bg3);border:1px solid rgba(201,168,76,.15);border-left:2px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:20px}
+.ft{font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:12px}
+.fg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.fs{text-align:center}.fsv{font-family:var(--fm);font-size:16px;font-weight:500;color:var(--white);letter-spacing:.5px}.fsl{font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:3px}
+
+/* ── CV CARDS ── */
+.cvc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px}
+.cvt{font-family:var(--fd);font-size:13px;font-weight:700;margin-bottom:12px}
+.cvt.cont{color:var(--blue3)}.cvt.rev{color:var(--orange2)}
+.cvr{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.cvr:last-child{border:none}.cvm{font-family:var(--fm);font-size:9px;color:var(--muted2)}.cvn{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--white)}
+
+/* ── BARS ── */
+.br{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.bl2{font-family:var(--fm);font-size:9px;color:var(--muted2);width:88px;text-align:right;flex-shrink:0}
+.bt{flex:1;height:7px;background:var(--bg5);border-radius:3px;overflow:hidden}
+.bf{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.bv{font-family:var(--fm);font-size:9px;color:var(--white);width:24px}
+
+/* ── FORM ── */
+.log-shell{max-width:680px}
+.pt2{height:2px;background:var(--border);border-radius:1px;margin-bottom:20px;overflow:hidden}
+.pf{height:100%;background:var(--gold);border-radius:1px;transition:width .4s ease}
+.sds{display:flex;gap:4px;margin-bottom:18px}
+.sd{width:5px;height:5px;border-radius:50%;background:var(--border);transition:all .25s}
+.sd.done{background:var(--gold);opacity:.5}.sd.active{background:var(--gold);width:14px;border-radius:3px}
+.step{display:none}.step.active{display:block;animation:fi .2s ease}
+.sb2{display:inline-flex;align-items:center;gap:8px;border-left:2px solid var(--gold);padding:6px 12px;margin-bottom:18px}
+.sbn{font-family:var(--fm);font-size:9px;font-weight:500;color:var(--gold);letter-spacing:1px}
+.sbt{font-family:var(--fs);font-size:16px;font-weight:400;font-style:italic;color:var(--white);letter-spacing:-.3px}.sbo{font-family:var(--fm);font-size:9px;color:var(--muted2)}
+.field{margin-bottom:16px}
+.field>label{display:block;font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:var(--muted2);margin-bottom:7px}
+.field select,.field textarea,.field input[type=text],.field input[type=url]{
+  width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:7px;
+  color:var(--white);font-size:13px;font-family:var(--fb);padding:10px 13px;outline:none;transition:border-color .2s
+}
+.field select:focus,.field textarea:focus,.field input:focus{border-color:var(--gold)}
+.field textarea{resize:vertical;min-height:80px;line-height:1.6}
+option{background:var(--bg3)}
+.pg{display:flex;flex-wrap:wrap;gap:6px}
+.pill{background:var(--bg4);border:1px solid var(--border2);border-radius:20px;padding:5px 13px;font-size:11px;font-family:var(--fm);color:var(--muted2);cursor:pointer;transition:all .15s;user-select:none;letter-spacing:.3px}
+.pill:hover:not(.sel){border-color:rgba(201,168,76,.35);color:var(--cream)}
+.pill.sel{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold)}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.cr{display:flex;align-items:center;gap:12px}
+.cr input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--border2);border-radius:2px;outline:none;cursor:pointer}
+.cr input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer}
+.cvd{font-family:var(--fd);font-size:22px;font-weight:800;color:var(--gold);min-width:26px;text-align:center}
+.flip-box{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.12);border-radius:8px;padding:12px;margin-top:4px}
+.flip-box-t{font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:10px}
+.sn{display:flex;gap:8px;padding-top:6px}
+.btn{padding:10px 20px;border-radius:7px;font-family:var(--fm);font-size:10px;letter-spacing:1px;cursor:pointer;border:1px solid var(--border2);transition:all .15s}
+.btn-g{background:var(--gold);color:var(--bg);border-color:var(--gold)}.btn-g:hover{background:var(--gold2)}
+.btn-h{background:transparent;color:var(--muted2)}.btn-h:hover{border-color:var(--gold);color:var(--gold)}
+.btn-s{flex:1;background:rgba(34,160,90,.12);border-color:rgba(34,160,90,.35);color:var(--green3)}.btn-s:hover{background:rgba(34,160,90,.2)}
+.btn-sm{padding:6px 13px;font-size:9px;border-radius:6px}
+
+/* ── IMAGE UPLOAD ── */
+.uz{border:1px dashed var(--border2);border-radius:7px;padding:14px;text-align:center;cursor:pointer;background:var(--bg4);position:relative;overflow:hidden;transition:border-color .2s}
+.uz:hover{border-color:var(--gold)}
+.uz input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uzl{font-family:var(--fm);font-size:9px;color:var(--muted2);pointer-events:none;letter-spacing:.5px}
+.uzl span{color:var(--gold)}
+.pw{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}
+.thumb{position:relative;width:72px;height:54px;border-radius:5px;overflow:hidden;border:1px solid var(--border2)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thr{position:absolute;top:2px;right:2px;width:14px;height:14px;border-radius:50%;background:var(--red2);color:white;font-size:9px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.cs{background:var(--bg4);border:1px solid var(--border2);border-radius:7px;padding:12px;margin-top:8px}
+.cst{font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--muted2);margin-bottom:8px}
+
+/* ── CALENDAR ── */
+.cal-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.cal-month{font-family:var(--fs);font-size:22px;font-weight:400;font-style:italic;color:var(--white);letter-spacing:-.5px}
+.cal-nav{display:flex;gap:6px}
+.cal-nav button{background:var(--bg3);border:1px solid var(--border);color:var(--cream);padding:5px 12px;border-radius:6px;cursor:pointer;font-family:var(--fm);font-size:9px;letter-spacing:.5px;transition:all .15s}
+.cal-nav button:hover{border-color:var(--gold);color:var(--gold)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{font-family:var(--fm);font-size:9px;color:var(--muted);text-align:center;padding:5px 0;letter-spacing:1px}
+.cal-day{background:var(--bg3);border:1px solid var(--border);border-radius:7px;min-height:74px;padding:7px;cursor:pointer;transition:all .2s}
+.cal-day:hover{border-color:rgba(201,168,76,.3)}
+.cal-day.empty{background:transparent;border-color:transparent;cursor:default;pointer-events:none}
+.cal-day.today{border-color:rgba(201,168,76,.35)}
+.cdn{font-family:var(--fd);font-size:11px;font-weight:700;color:var(--muted2);margin-bottom:4px}
+.cal-day.today .cdn{color:var(--gold)}
+.cbs{display:flex;flex-direction:column;gap:2px}
+.cb{font-family:var(--fm);font-size:8px;padding:2px 5px;border-radius:3px;display:flex;align-items:center;gap:3px;letter-spacing:.2px}
+.cb-l{background:rgba(36,113,163,.2);color:var(--blue3)}.cb-n{background:rgba(142,68,173,.2);color:#a569bd}
+.cb-b{background:rgba(201,168,76,.1);color:var(--gold)}.cb-o{background:rgba(58,66,80,.2);color:var(--muted2)}
+.cdot{width:4px;height:4px;border-radius:50%;flex-shrink:0}
+.dap{background:var(--green3)}.da{background:var(--blue3)}.db3{background:var(--orange3)}.df{background:var(--red3)}.dn{background:var(--muted)}
+
+/* ── BIAS LAB ── */
+.bias-list{display:flex;flex-direction:column;gap:10px;margin-bottom:20px}
+.bc{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;transition:border-color .2s}
+.bc:hover{border-color:rgba(201,168,76,.25)}
+.bc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+.bc-week{font-family:var(--fs);font-size:15px;font-weight:400;font-style:italic;color:var(--gold);letter-spacing:-.3px}
+.bc-dir{font-family:var(--fm);font-size:9px;letter-spacing:.5px;margin-top:2px}
+.bc-body{font-size:12px;color:var(--cream);line-height:1.5;margin-top:6px}
+.bc-levels{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.lt{font-family:var(--fm);font-size:8px;padding:2px 7px;border-radius:3px;background:var(--bg4);border:1px solid var(--border2);color:var(--muted2)}
+
+/* ── MODAL ── */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:100;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:28px 16px}
+.mo.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:100%;max-width:760px;margin:auto;overflow:hidden}
+.mh{background:var(--bg3);padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.mt2{font-family:var(--fs);font-size:17px;font-weight:400;font-style:italic;color:var(--white);letter-spacing:-.3px}
+.mc{background:transparent;border:1px solid var(--border);color:var(--muted2);padding:5px 11px;border-radius:5px;cursor:pointer;font-family:var(--fm);font-size:9px;transition:all .15s}
+.mc:hover{border-color:var(--red2);color:var(--red3)}
+.mb{padding:22px}
+.ds2{margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid var(--border)}
+.ds2:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.dst{font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:10px}
+.dg2{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.di{background:var(--bg3);border-radius:5px;padding:9px 11px}
+.dil{font-family:var(--fm);font-size:8px;color:var(--muted2);letter-spacing:.5px;margin-bottom:3px}
+.div2{font-size:12px;color:var(--white);font-weight:500}
+.dt2{background:var(--bg3);border-radius:5px;padding:11px 13px;font-size:12px;color:var(--cream);line-height:1.6;margin-bottom:6px}
+.dcharts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.dcb{flex:1;min-width:150px}
+.dcl2{font-family:var(--fm);font-size:8px;color:var(--muted2);margin-bottom:4px;letter-spacing:.5px}
+.dci{width:100%;border-radius:5px;border:1px solid var(--border2);object-fit:cover;max-height:120px;cursor:pointer}
+.dca{display:block;font-family:var(--fm);font-size:9px;color:var(--blue3);text-decoration:none;margin-top:3px;word-break:break-all}
+
+.badge{font-family:var(--fm);font-size:9px;padding:2px 7px;border-radius:3px;font-weight:500;letter-spacing:.3px}
+.bap{background:rgba(26,92,56,.35);color:var(--green3);border:1px solid rgba(34,160,90,.25)}
+.ba{background:rgba(26,58,92,.35);color:var(--blue3);border:1px solid rgba(93,173,226,.15)}
+.bb{background:rgba(211,84,0,.18);color:var(--orange3);border:1px solid rgba(243,156,18,.18)}
+.bff{background:rgba(192,57,43,.18);color:var(--red3);border:1px solid rgba(231,76,60,.18)}
+.boos{background:rgba(192,57,43,.12);color:var(--red2);border:1px solid rgba(192,57,43,.18)}
+.bfl{background:rgba(201,168,76,.08);color:var(--gold);border:1px solid rgba(201,168,76,.2)}
+.bflw{background:rgba(34,160,90,.08);color:var(--green3);border:1px solid rgba(34,160,90,.2)}
+
+/* ── LIGHTBOX ── */
+.lbx{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:200;display:none;align-items:center;justify-content:center;cursor:pointer}
+.lbx.open{display:flex}
+.lbx img{max-width:90vw;max-height:90vh;border-radius:7px;border:1px solid var(--border2)}
+
+.es{text-align:center;padding:50px 20px;color:var(--muted2);font-family:var(--fm);font-size:11px;line-height:1.8}
+.em{font-family:var(--fs);font-size:42px;font-style:italic;color:var(--border2);margin-bottom:10px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.grade-row{background:var(--bg4);border:1px solid var(--border2);border-radius:7px;padding:11px 13px;margin-bottom:8px}
+.grade-label{font-family:var(--fm);font-size:9px;color:var(--cream);letter-spacing:.5px;margin-bottom:8px}
+.grade-btns{display:flex;gap:6px;margin-bottom:8px}
+.grade-btns button{padding:4px 14px;border-radius:4px;font-family:var(--fm);font-size:10px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--muted2);transition:all .15s}
+.grade-btns button:hover{border-color:var(--gold);color:var(--gold)}
+.grade-row input[type=text]{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--white);font-size:11px;font-family:var(--fb);padding:7px 10px;outline:none}
+  .sidebar{width:44px}.topnav{display:none}
+  .view{padding:18px 14px}.ks{grid-template-columns:repeat(2,1fr)}
+  .g2,.r2,.dg2{grid-template-columns:1fr}.g3,.r3{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SLIM SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-logo">EP<span>·</span></div>
+    <div class="si active" onclick="nav('dashboard')" title="">
+      <svg viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/><rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/></svg>
+      <span class="si-tip">Dashboard</span>
+    </div>
+    <div class="si" onclick="nav('bias')" title="">
+      <svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h8M2 12h10"/><circle cx="14" cy="8" r="2" fill="currentColor" stroke="none" style="color:#2a3348"/></svg>
+      <span class="si-tip">Bias Lab</span>
+    </div>
+    <div class="si" onclick="nav('log')" title="">
+      <svg viewBox="0 0 16 16"><path d="M3 4h10M3 8h10M3 12h6"/><circle cx="13" cy="12" r="2.5"/></svg>
+      <span class="si-tip">Log Session</span>
+    </div>
+    <div class="si" onclick="nav('calendar')" title="">
+      <svg viewBox="0 0 16 16"><rect x="1" y="3" width="14" height="12" rx="2"/><path d="M5 1v4M11 1v4M1 7h14"/></svg>
+      <span class="si-tip">Calendar</span>
+    </div>
+    <div class="si" onclick="nav('weekly')" title="">
+      <svg viewBox="0 0 16 16"><path d="M2 3h12v2H2zM2 7h8M2 10h10M2 13h6"/><path d="M12 9l2 2-2 2"/></svg>
+      <span class="si-tip">Weekly Review</span>
+    </div>
+    <div class="si" onclick="nav('news')" title="">
+      <svg viewBox="0 0 16 16"><path d="M2 2h12v10H2z"/><path d="M5 5h6M5 8h4"/><path d="M1 12h14"/></svg>
+      <span class="si-tip">News Impact</span>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- TOPBAR — Option D -->
+    <div class="topbar">
+      <div class="brand">Edge<span>·</span>Print</div>
+      <nav class="topnav">
+        <div class="tn active" onclick="nav('dashboard')">dashboard</div>
+        <div class="tn" onclick="nav('bias')">bias lab</div>
+        <div class="tn" onclick="nav('log')">log session</div>
+        <div class="tn" onclick="nav('calendar')">calendar</div>
+        <div class="tn" onclick="nav('weekly')">weekly review</div>
+        <div class="tn" onclick="nav('news')">news impact</div>
+      </nav>
+    
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="view active" id="v-dashboard">
+        <div class="ph"><div><div class="pt">Dashboard</div><div class="ps">BEHAVIORAL FINGERPRINT · LIVE</div></div></div>
+        <div class="ks">
+          <div class="kpi go"><div class="kl">SESSIONS</div><div class="kv" id="kpi-n">0</div><div class="kd">logged</div></div>
+          <div class="kpi gr"><div class="kl">A+ RATE</div><div class="kv" id="kpi-ap">–</div><div class="kd">of traded sessions</div></div>
+          <div class="kpi re"><div class="kl">FORCED RATE</div><div class="kv" id="kpi-fr">–</div><div class="kd">target below 15%</div></div>
+          <div class="kpi bl"><div class="kl">EXEC SCORE</div><div class="kv" id="kpi-sc">–</div><div class="kd">A+=4 A=3 B=2 F=1</div></div>
+          <div class="kpi or"><div class="kl">FLIP WIN RATE</div><div class="kv" id="kpi-flip">–</div><div class="kd">adaptive read accuracy</div></div>
+        </div>
+        <div class="ab" id="danger-banner"></div>
+        <div class="fc">
+          <div class="ft">ADAPTIVE READ — BIAS FLIP TRACKER</div>
+          <div class="fg">
+            <div class="fs"><div class="fsv" id="fl-total">0</div><div class="fsl">TOTAL FLIPS</div></div>
+            <div class="fs"><div class="fsv" style="color:var(--green3)" id="fl-win">0</div><div class="fsl">CORRECT</div></div>
+            <div class="fs"><div class="fsv" style="color:var(--red3)" id="fl-loss">0</div><div class="fsl">WRONG</div></div>
+          </div>
+        </div>
+        <div class="sh">DANGER SIGNALS</div>
+        <div class="dg">
+          <div class="ds" id="ds0"><div class="dd"></div><div class="db"><div class="dl">Forced trades</div><div class="dsub">Threshold: &gt;15% of traded sessions</div></div><div class="dc" id="ds0-n">0</div></div>
+          <div class="ds" id="ds1"><div class="dd"></div><div class="db"><div class="dl">Traded out of sync</div><div class="dsub">Should be near zero — you had no read</div></div><div class="dc" id="ds1-n">0</div></div>
+          <div class="ds" id="ds2"><div class="dd"></div><div class="db"><div class="dl">Forced bias + traded</div><div class="dsub">Price disagreed. You traded anyway.</div></div><div class="dc" id="ds2-n">0</div></div>
+          <div class="ds" id="ds3"><div class="dd"></div><div class="db"><div class="dl">High conviction + out of sync</div><div class="dsub">Overconfidence trap — belief over price</div></div><div class="dc" id="ds3-n">0</div></div>
+          <div class="ds" id="ds4"><div class="dd"></div><div class="db"><div class="dl">Traded on unclear days</div><div class="dsub">No setup. No business being in the market.</div></div><div class="dc" id="ds4-n">0</div></div>
+          <div class="ds" id="ds5"><div class="dd"></div><div class="db"><div class="dl">Negative state before entry</div><div class="dsub">Tilted, rushed, anxious or distracted — then traded</div></div><div class="dc" id="ds5-n">0</div></div>
+          <div class="ds" id="ds6"><div class="dd"></div><div class="db"><div class="dl">First deviation this week</div><div class="dsub">Went off-plan — tracks how often the leak starts early</div></div><div class="dc" id="ds6-n">0</div></div>
+          <div class="ds" id="ds7"><div class="dd"></div><div class="db"><div class="dl">Repeat offender flag</div><div class="dsub">Same deviation 3+ times this week — this is your core leak</div></div><div class="dc" id="ds7-n">–</div></div>
+          <div class="ds" id="ds8"><div class="dd"></div><div class="db"><div class="dl">Discipline rate — stayed out on unclear days</div><div class="dsub">Not trading bad days is a win</div></div><div class="dc" id="ds8-n">–</div></div>
+        </div>
+        <div class="g2">
+          <div>
+            <div class="sh">CONTINUATION vs REVERSAL</div>
+            <div class="g2" style="margin-bottom:0">
+              <div class="cvc"><div class="cvt cont">Continuation</div>
+                <div class="cvr"><span class="cvm">Sessions</span><span class="cvn" id="cv-c-n">0</span></div>
+                <div class="cvr"><span class="cvm">A+/A rate</span><span class="cvn" id="cv-c-q">–</span></div>
+                <div class="cvr"><span class="cvm">Forced rate</span><span class="cvn" id="cv-c-f">–</span></div>
+                <div class="cvr"><span class="cvm">In sync</span><span class="cvn" id="cv-c-s">–</span></div>
+              </div>
+              <div class="cvc"><div class="cvt rev">Reversal</div>
+                <div class="cvr"><span class="cvm">Sessions</span><span class="cvn" id="cv-r-n">0</span></div>
+                <div class="cvr"><span class="cvm">A+/A rate</span><span class="cvn" id="cv-r-q">–</span></div>
+                <div class="cvr"><span class="cvm">Forced rate</span><span class="cvn" id="cv-r-f">–</span></div>
+                <div class="cvr"><span class="cvm">In sync</span><span class="cvn" id="cv-r-s">–</span></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="sh">EXECUTION QUALITY</div>
+            <div class="card" style="padding:14px"><div id="exec-bars"></div></div>
+          </div>
+        </div>
+        <div class="sh">DAY TYPE DISTRIBUTION</div>
+        <div class="card" style="padding:14px;margin-bottom:20px"><div id="daytype-bars"></div></div>
+        <div class="sh">NEWS IMPACT ON MODEL DELIVERY</div>
+        <div class="card" style="padding:16px;margin-bottom:24px">
+          <div class="g3" style="margin-bottom:14px">
+            <div style="text-align:center"><div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px">NEWS SESSIONS</div><div style="font-family:var(--fm);font-size:16px;font-weight:500;color:var(--white)" id="news-total">–</div></div>
+            <div style="text-align:center"><div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px">MODEL HELD UP</div><div style="font-family:var(--fm);font-size:16px;font-weight:500;color:var(--green3)" id="news-clean">–</div></div>
+            <div style="text-align:center"><div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:6px">MODEL BROKEN</div><div style="font-family:var(--fm);font-size:16px;font-weight:500;color:var(--red3)" id="news-broken">–</div></div>
+          </div>
+          <div id="news-effect-bars"></div>
+        </div>
+      </div>
+
+      <!-- BIAS LAB -->
+      <div class="view" id="v-bias">
+        <div class="ph">
+          <div><div class="pt">Bias Lab</div><div class="ps">YOUR PROCESS · WHERE PRICE IS DRAWING TO</div></div>
+          <button class="btn btn-g btn-sm" onclick="showBF()">+ new bias</button>
+        </div>
+        <div id="bias-form" style="display:none;max-width:680px;margin-bottom:24px">
+          <div class="card">
+            <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">NEW BIAS ENTRY</div>
+            <div class="r2">
+              <div class="field"><label>WEEK / DATE</label><input type="text" id="bf-week" placeholder="Week of 24 Mar 2026"></div>
+              <div class="field"><label>TIMEFRAME</label><select id="bf-tf"><option value="">Select...</option><option>Weekly Bias</option><option>Daily Bias</option><option>Both</option></select></div>
+            </div>
+            <div class="field"><label>WHERE IS PRICE DRAWING TO — targets</label><textarea id="bf-drawing" style="min-height:70px" placeholder="Old highs, old lows, weekly FVGs, institutional levels, HTF objectives..."></textarea></div>
+            <div class="field"><label>HTF STRUCTURE — weekly + daily read</label><textarea id="bf-structure" style="min-height:80px" placeholder="What does weekly and daily structure tell you? Trending, ranging, premium or discount, path of least resistance..."></textarea></div>
+            <div class="field"><label>KEY LEVELS</label>
+              <div class="r3">
+                <div><div style="font-family:var(--fm);font-size:8px;color:var(--muted2);letter-spacing:.5px;margin-bottom:5px">HIGHS TO WATCH</div><textarea id="bf-highs" style="min-height:55px;font-size:12px" placeholder="Weekly high, daily high..."></textarea></div>
+                <div><div style="font-family:var(--fm);font-size:8px;color:var(--muted2);letter-spacing:.5px;margin-bottom:5px">LOWS TO WATCH</div><textarea id="bf-lows" style="min-height:55px;font-size:12px" placeholder="Weekly low, daily low..."></textarea></div>
+                <div><div style="font-family:var(--fm);font-size:8px;color:var(--muted2);letter-spacing:.5px;margin-bottom:5px">POIs / FVGs</div><textarea id="bf-pois" style="min-height:55px;font-size:12px" placeholder="FVGs, order blocks, breakers..."></textarea></div>
+              </div>
+            </div>
+            <div class="field"><label>CONVICTION + FULL REASONING</label><textarea id="bf-conviction" style="min-height:100px" placeholder="Write your full process. Why bullish or bearish? What confluences are aligning? What would invalidate this? Think out loud."></textarea></div>
+            <div class="field"><label>OVERALL DIRECTION</label>
+              <div class="pg" id="pg-bdir">
+                <div class="pill" data-group="bdir">Bullish</div><div class="pill" data-group="bdir">Bearish</div>
+                <div class="pill" data-group="bdir">Neutral — Wait</div><div class="pill" data-group="bdir">Conditional</div>
+              </div>
+            </div>
+            <div class="field"><label>CHART</label>
+              <div class="uz"><input type="file" accept="image/*" multiple onchange="handleImg(event,'bias')"><div class="uzl">Drop chart here or <span>browse</span></div></div>
+              <div class="pw" id="prev-bias"></div>
+              <div class="cs"><div class="cst">TRADINGVIEW LINK</div><input type="url" id="bf-link" placeholder="https://www.tradingview.com/chart/..."></div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="hideBF()">cancel</button><button class="btn btn-g" onclick="saveBias()">save bias →</button></div>
+          </div>
+        </div>
+        <div class="bias-list" id="bias-list"></div>
+      </div>
+
+      <!-- LOG SESSION -->
+      <div class="view" id="v-log">
+        <div class="ph"><div><div class="pt">Log Session</div><div class="ps">7 STEPS · DO THE WORK</div></div></div>
+        <div class="log-shell">
+          <div class="pt2"><div class="pf" id="pbar" style="width:14%"></div></div>
+          <div class="sds" id="sdots"></div>
+
+          <div class="step active" id="s1">
+            <div class="sb2"><span class="sbn">01</span><span class="sbt">Session Identity</span><span class="sbo">1 / 7</span></div>
+            <div class="r2">
+              <div class="field"><label>DATE</label><input type="text" id="f-date" placeholder="22 Mar 2026"></div>
+              <div class="field"><label>SESSION</label><select id="f-sess"><option value="">Select...</option><option>London</option><option>NY</option><option>Both</option><option>Observation Only</option></select></div>
+            </div>
+            <div class="field"><label>DAY OF WEEK</label>
+              <div class="pg" id="pg-day"><div class="pill" data-group="day">Monday</div><div class="pill" data-group="day">Tuesday</div><div class="pill" data-group="day">Wednesday</div><div class="pill" data-group="day">Thursday</div><div class="pill" data-group="day">Friday</div></div>
+            </div>
+            <div class="sn"><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s2">
+            <div class="sb2"><span class="sbn">02</span><span class="sbt">Pre-Session Snapshot</span><span class="sbo">2 / 7</span></div>
+            <div class="r2">
+              <div class="field"><label>HTF BIAS</label><select id="f-bias"><option value="">Select...</option><option>Bullish</option><option>Bearish</option><option>Neutral</option></select></div>
+              <div class="field"><label>BIAS CONFIDENCE</label><select id="f-bconf"><option value="">Select...</option><option>High</option><option>Medium</option><option>Low</option></select></div>
+            </div>
+            <div class="field"><label>CONVICTION (0–10)</label>
+              <div class="cr"><input type="range" min="0" max="10" step="1" value="5" id="f-conv" oninput="document.getElementById('cd').textContent=this.value"><span class="cvd" id="cd">5</span></div>
+            </div>
+            <div class="field"><label>PRIMARY EXPECTATION</label><textarea id="f-exp" placeholder="Where was price? What were you anticipating? HTF zones, ideal scenario."></textarea></div>
+            <div class="field"><label>WHAT WOULD INVALIDATE YOUR IDEA?</label><textarea id="f-inv" style="min-height:60px" placeholder="Be specific."></textarea></div>
+            <div class="field"><label>PRE-SESSION CHART</label>
+              <div class="uz"><input type="file" accept="image/*" multiple onchange="handleImg(event,'pre')"><div class="uzl">Drop chart here or <span>browse</span></div></div>
+              <div class="pw" id="prev-pre"></div>
+              <div class="cs"><div class="cst">TRADINGVIEW LINK</div><input type="url" id="f-link-pre" placeholder="https://www.tradingview.com/chart/..."></div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s3">
+            <div class="sb2"><span class="sbn">03</span><span class="sbt">Market Behavior</span><span class="sbo">3 / 7</span></div>
+            <div class="field"><label>DAY TYPE</label>
+              <div class="pg" id="pg-dt"><div class="pill" data-group="dt">Continuation</div><div class="pill" data-group="dt">Reversal</div><div class="pill" data-group="dt">Rotational</div><div class="pill" data-group="dt">News-Driven</div><div class="pill" data-group="dt">Mixed</div><div class="pill" data-group="dt">Unclear</div></div>
+            </div>
+            <div class="r2">
+              <div class="field"><label>DELIVERY SPEED</label><select id="f-spd"><option value="">Select...</option><option>Urgent</option><option>Normal</option><option>Slow</option><option>Engineered</option></select></div>
+              <div class="field"><label>LIQUIDITY BEHAVIOR</label><select id="f-liq"><option value="">Select...</option><option>Clean Raid + Reversal</option><option>Multiple Sweeps</option><option>No Clear Raid</option><option>Misleading / Inducement</option></select></div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s4">
+            <div class="sb2"><span class="sbn">04</span><span class="sbt">Synchronization</span><span class="sbo">4 / 7</span></div>
+            <div class="field"><label>WERE YOU IN SYNC?</label><div class="pg" id="pg-sync"><div class="pill" data-group="sync">Fully In Sync</div><div class="pill" data-group="sync">Partially In Sync</div><div class="pill" data-group="sync">Out Of Sync</div></div></div>
+            <div class="field"><label>DID YOU TRUST PRICE WHEN YOU SHOULD HAVE?</label><div class="pg" id="pg-tr"><div class="pill" data-group="tr">Yes</div><div class="pill" data-group="tr">No</div></div></div>
+            <div class="field"><label>DID YOU HESITATE UNNECESSARILY?</label><div class="pg" id="pg-hes"><div class="pill" data-group="hes">Yes</div><div class="pill" data-group="hes">No</div></div></div>
+            <div class="field"><label>DID YOU FORCE YOUR BIAS?</label><div class="pg" id="pg-fb"><div class="pill" data-group="fb">Yes</div><div class="pill" data-group="fb">No</div></div></div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s5">
+            <div class="sb2"><span class="sbn">05</span><span class="sbt">Execution + Adaptive Read</span><span class="sbo">5 / 7</span></div>
+            <div class="field"><label>STATE BEFORE ENTRY — how were you feeling when you sat down?</label>
+              <div class="pg" id="pg-state">
+                <div class="pill" data-group="state">Calm</div>
+                <div class="pill" data-group="state">Rushed</div>
+                <div class="pill" data-group="state">Bored</div>
+                <div class="pill" data-group="state">Tilted</div>
+                <div class="pill" data-group="state">Anxious</div>
+                <div class="pill" data-group="state">Overconfident</div>
+                <div class="pill" data-group="state">Distracted</div>
+              </div>
+            </div>
+            <div class="field"><label>DID YOU TRADE TODAY?</label><div class="pg" id="pg-trd"><div class="pill" data-group="trd">Yes</div><div class="pill" data-group="trd">No</div></div></div>
+            <div id="no-trade-win-section" style="background:rgba(34,160,90,.04);border:1px solid rgba(34,160,90,.12);border-radius:8px;padding:12px;margin-bottom:16px;display:none">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--green3);margin-bottom:10px">NO TRADE = WIN?</div>
+              <div class="field" style="margin-bottom:10px"><label>ON AN UNCLEAR DAY — DID YOU STAY OUT?</label>
+                <div class="pg" id="pg-stayout"><div class="pill" data-group="stayout">Yes — stayed out</div><div class="pill" data-group="stayout">No — traded anyway</div><div class="pill" data-group="stayout">Not an unclear day</div></div>
+              </div>
+              <div class="field" style="margin-bottom:0"><label>WHY DID YOU STAY OUT OR WHY DIDN'T YOU?</label>
+                <textarea id="f-stayout-why" style="min-height:60px" placeholder="Discipline is saying no. What was the reasoning?"></textarea>
+              </div>
+            </div>
+            <div class="r2">
+              <div class="field"><label>EXECUTION QUALITY</label><select id="f-exec"><option value="">Select...</option><option>A+</option><option>A</option><option>B</option><option>Forced</option></select></div>
+              <div class="field"><label>EMOTIONAL STATE DURING EXECUTION</label><select id="f-emo"><option value="">Select...</option><option>Calm</option><option>Confident</option><option>Hesitant</option><option>Fearful</option><option>Neutral</option></select></div>
+            </div>
+            <div class="field"><label>ALIGNED WITH YOUR MODEL?</label><div class="pg" id="pg-aln"><div class="pill" data-group="aln">Yes</div><div class="pill" data-group="aln">Partially</div><div class="pill" data-group="aln">No</div></div></div>
+            <div style="background:rgba(231,76,60,.04);border:1px solid rgba(231,76,60,.12);border-radius:8px;padding:12px;margin-bottom:16px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--red3);margin-bottom:10px">FIRST DEVIATION</div>
+              <div class="field" style="margin-bottom:10px"><label>DID YOU DEVIATE FROM YOUR PLAN?</label>
+                <div class="pg" id="pg-dev"><div class="pill" data-group="dev">Yes — I deviated</div><div class="pill" data-group="dev">No — stayed on plan</div></div>
+              </div>
+              <div class="field" style="margin-bottom:10px"><label>IF YES — TYPE OF DEVIATION</label>
+                <select id="f-devtype"><option value="">Select...</option><option>Entered early — level not reached</option><option>Moved stop prematurely</option><option>Exited early — didn't let it run</option><option>Added to a losing position</option><option>Chased after missing the entry</option><option>Ignored invalidation signal</option><option>Sized up without reason</option><option>Other</option></select>
+              </div>
+              <div class="field" style="margin-bottom:0"><label>DESCRIBE THE EXACT MOMENT YOU WENT OFF PLAN</label>
+                <textarea id="f-devdesc" style="min-height:70px" placeholder="Be specific. What happened, what did you see, what decision did you make that started the unraveling?"></textarea>
+              </div>
+            </div>
+            <div class="flip-box">
+              <div class="flip-box-t">ADAPTIVE READ — BIAS FLIP</div>
+              <div class="field" style="margin-bottom:10px"><label>DID YOU FLIP YOUR BIAS?</label><div class="pg" id="pg-flip"><div class="pill" data-group="flip">Yes — I flipped</div><div class="pill" data-group="flip">No — stayed with bias</div></div></div>
+              <div class="field" style="margin-bottom:0"><label>IF YOU FLIPPED — WAS THE READ CORRECT?</label><div class="pg" id="pg-flipr"><div class="pill" data-group="flipr">Yes — price confirmed</div><div class="pill" data-group="flipr">No — flip was wrong</div><div class="pill" data-group="flipr">N/A</div></div></div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s6">
+            <div class="sb2"><span class="sbn">06</span><span class="sbt">Session Narrative</span><span class="sbo">6 / 8</span></div>
+            <div class="field"><label>WHAT ACTUALLY HAPPENED</label><textarea id="f-hap" style="min-height:100px" placeholder="Tell the full story. How did price unfold? Where were you in sync? Where did expectations change?"></textarea></div>
+            <div class="field"><label>WHAT HAPPENED — CHART</label>
+              <div class="uz"><input type="file" accept="image/*" multiple onchange="handleImg(event,'hap')"><div class="uzl">Drop chart here or <span>browse</span></div></div>
+              <div class="pw" id="prev-hap"></div>
+              <div class="cs"><div class="cst">TRADINGVIEW LINK</div><input type="url" id="f-link-hap" placeholder="https://www.tradingview.com/chart/..."></div>
+            </div>
+            <div class="field"><label>WHAT CONFUSED YOU / OUT OF SYNC?</label><textarea id="f-conf" style="min-height:65px" placeholder="The confusion is where the lesson lives. Don't skip this."></textarea></div>
+            <div class="field"><label>⭐ REAL LESSON TODAY</label><textarea id="f-les" style="min-height:55px" placeholder="What did price teach you today about its behavior?"></textarea></div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s7">
+            <div class="sb2"><span class="sbn">07</span><span class="sbt">Trade Grading</span><span class="sbo">7 / 9</span></div>
+            <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);letter-spacing:.5px;margin-bottom:16px">Grade each criterion A, B or C. Add notes on why. Then give the session an overall grade.</div>
+
+            <div id="trade-grades-wrap">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)">TRADE 1</div>
+              <div class="r2" style="margin-bottom:10px">
+                <div class="field"><label>TRADE DIRECTION</label><select id="tg1-dir"><option value="">Select...</option><option>Long</option><option>Short</option></select></div>
+                <div class="field"><label>OUTCOME</label><select id="tg1-out"><option value="">Select...</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+              </div>
+              <div class="grade-row" data-crit="entry" data-trade="1"><div class="grade-label">ENTRY QUALITY</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-entry-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-entry-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-entry-grade','C')">C</button></div><input type="hidden" id="tg1-entry-grade"><input type="text" id="tg1-entry-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="stop" data-trade="1"><div class="grade-label">STOP PLACEMENT</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-stop-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-stop-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-stop-grade','C')">C</button></div><input type="hidden" id="tg1-stop-grade"><input type="text" id="tg1-stop-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="target" data-trade="1"><div class="grade-label">TARGET SELECTION</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-target-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-target-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-target-grade','C')">C</button></div><input type="hidden" id="tg1-target-grade"><input type="text" id="tg1-target-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="management" data-trade="1"><div class="grade-label">TRADE MANAGEMENT</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-management-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-management-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-management-grade','C')">C</button></div><input type="hidden" id="tg1-management-grade"><input type="text" id="tg1-management-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="patience" data-trade="1"><div class="grade-label">PATIENCE</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-patience-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-patience-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-patience-grade','C')">C</button></div><input type="hidden" id="tg1-patience-grade"><input type="text" id="tg1-patience-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="risk" data-trade="1"><div class="grade-label">RISK DISCIPLINE</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-risk-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-risk-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-risk-grade','C')">C</button></div><input type="hidden" id="tg1-risk-grade"><input type="text" id="tg1-risk-note" placeholder="Why this grade?"></div>
+              <div class="grade-row" data-crit="exit" data-trade="1"><div class="grade-label">EXIT QUALITY</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg1-exit-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg1-exit-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg1-exit-grade','C')">C</button></div><input type="hidden" id="tg1-exit-grade"><input type="text" id="tg1-exit-note" placeholder="Why this grade?"></div>
+            </div>
+
+            <div style="margin-top:6px;margin-bottom:6px">
+              <button type="button" onclick="addTrade2()" id="add-trade2-btn" style="width:100%;padding:9px;background:transparent;border:1px dashed var(--border2);border-radius:7px;font-family:var(--fm);font-size:9px;color:var(--muted2);cursor:pointer">+ add second trade</button>
+            </div>
+
+            <div id="trade2-wrap" style="display:none">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);margin-top:12px">TRADE 2</div>
+              <div class="r2" style="margin-bottom:10px">
+                <div class="field"><label>TRADE DIRECTION</label><select id="tg2-dir"><option value="">Select...</option><option>Long</option><option>Short</option></select></div>
+                <div class="field"><label>OUTCOME</label><select id="tg2-out"><option value="">Select...</option><option>Win</option><option>Loss</option><option>Breakeven</option></select></div>
+              </div>
+              <div class="grade-row"><div class="grade-label">ENTRY QUALITY</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-entry-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-entry-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-entry-grade','C')">C</button></div><input type="hidden" id="tg2-entry-grade"><input type="text" id="tg2-entry-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">STOP PLACEMENT</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-stop-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-stop-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-stop-grade','C')">C</button></div><input type="hidden" id="tg2-stop-grade"><input type="text" id="tg2-stop-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">TARGET SELECTION</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-target-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-target-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-target-grade','C')">C</button></div><input type="hidden" id="tg2-target-grade"><input type="text" id="tg2-target-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">TRADE MANAGEMENT</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-management-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-management-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-management-grade','C')">C</button></div><input type="hidden" id="tg2-management-grade"><input type="text" id="tg2-management-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">PATIENCE</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-patience-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-patience-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-patience-grade','C')">C</button></div><input type="hidden" id="tg2-patience-grade"><input type="text" id="tg2-patience-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">RISK DISCIPLINE</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-risk-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-risk-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-risk-grade','C')">C</button></div><input type="hidden" id="tg2-risk-grade"><input type="text" id="tg2-risk-note" placeholder="Why this grade?"></div>
+              <div class="grade-row"><div class="grade-label">EXIT QUALITY</div><div class="grade-btns"><button type="button" onclick="gradeBtn(this,'tg2-exit-grade','A')">A</button><button type="button" onclick="gradeBtn(this,'tg2-exit-grade','B')">B</button><button type="button" onclick="gradeBtn(this,'tg2-exit-grade','C')">C</button></div><input type="hidden" id="tg2-exit-grade"><input type="text" id="tg2-exit-note" placeholder="Why this grade?"></div>
+            </div>
+
+            <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px;margin-top:14px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:12px">OVERALL SESSION GRADE</div>
+              <div style="display:flex;gap:8px;margin-bottom:12px" id="session-grade-btns">
+                <button type="button" onclick="sessionGradeBtn(this,'A')" style="flex:1;padding:10px;border-radius:7px;font-family:var(--fm);font-size:12px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--muted2)">A</button>
+                <button type="button" onclick="sessionGradeBtn(this,'B')" style="flex:1;padding:10px;border-radius:7px;font-family:var(--fm);font-size:12px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--muted2)">B</button>
+                <button type="button" onclick="sessionGradeBtn(this,'C')" style="flex:1;padding:10px;border-radius:7px;font-family:var(--fm);font-size:12px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--muted2)">C</button>
+              </div>
+              <input type="hidden" id="session-overall-grade" value="">
+              <div class="field" style="margin-bottom:0"><label>WHY THIS OVERALL GRADE?</label>
+                <textarea id="session-grade-reason" style="min-height:70px" placeholder="What earned this grade? What would have made it better?"></textarea>
+              </div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s8">
+            <div class="sb2"><span class="sbn">08</span><span class="sbt">News Impact</span><span class="sbo">8 / 9</span></div>
+            <div style="background:rgba(231,163,76,.04);border:1px solid rgba(201,168,76,.12);border-radius:8px;padding:14px;margin-bottom:16px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:12px">PRE-NEWS — BEFORE THE RELEASE</div>
+              <div class="field"><label>WAS THERE A HIGH IMPACT NEWS RELEASE THIS SESSION?</label>
+                <div class="pg" id="pg-news"><div class="pill" data-group="news">Yes</div><div class="pill" data-group="news">No</div></div>
+              </div>
+              <div class="field"><label>NEWS EVENT (type it in)</label>
+                <input type="text" id="f-newsname" placeholder="e.g. CPI, NFP, FOMC, Earnings, Central Bank Speech...">
+              </div>
+              <div class="field"><label>RELEASE TIME</label>
+                <input type="text" id="f-newstime" placeholder="e.g. 08:30 EST, 13:30 London">
+              </div>
+              <div class="field"><label>WHERE WAS YOUR SETUP RELATIVE TO THE RELEASE?</label>
+                <div class="pg" id="pg-newspos">
+                  <div class="pill" data-group="newspos">Setup presented pre-news — I was already in</div>
+                  <div class="pill" data-group="newspos">Setup presented post-news — I waited for the release</div>
+                  <div class="pill" data-group="newspos">News hit during my trade</div>
+                  <div class="pill" data-group="newspos">No setup — I avoided the session</div>
+                </div>
+              </div>
+            </div>
+            <div style="background:rgba(93,173,226,.04);border:1px solid rgba(93,173,226,.12);border-radius:8px;padding:14px;margin-bottom:16px">
+              <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--blue3);margin-bottom:12px">POST-NEWS — AFTER THE RELEASE</div>
+              <div class="field"><label>HOW DID THE NEWS AFFECT DELIVERY OF YOUR MODEL?</label>
+                <div class="pg" id="pg-newseffect">
+                  <div class="pill" data-group="newseffect">No effect — model delivered clean</div>
+                  <div class="pill" data-group="newseffect">Accelerated my direction</div>
+                  <div class="pill" data-group="newseffect">Caused a stop hunt then continued</div>
+                  <div class="pill" data-group="newseffect">Created a fake move then reversed</div>
+                  <div class="pill" data-group="newseffect">Killed the setup entirely</div>
+                  <div class="pill" data-group="newseffect">Made price unpredictable</div>
+                </div>
+              </div>
+              <div class="field"><label>DID YOU TRADE AROUND THE NEWS?</label>
+                <div class="pg" id="pg-newstraded">
+                  <div class="pill" data-group="newstraded">Yes — pre-news entry</div>
+                  <div class="pill" data-group="newstraded">Yes — post-news entry</div>
+                  <div class="pill" data-group="newstraded">No — sat out the release</div>
+                  <div class="pill" data-group="newstraded">Was already in when news hit</div>
+                </div>
+              </div>
+              <div class="field"><label>FULL NOTES — what happened before, during and after the release?</label>
+                <textarea id="f-newsnotes" style="min-height:90px" placeholder="Describe price behaviour around the release. Did it respect your levels? Did it engineer liquidity into the number? Did the aftermath give a clean continuation or reversal? Be specific."></textarea>
+              </div>
+              <div class="field"><label>DID THIS NEWS RELEASE CONFIRM OR BREAK YOUR MODEL'S LOGIC?</label>
+                <div class="pg" id="pg-newsverdict">
+                  <div class="pill" data-group="newsverdict">Confirmed — model held up</div>
+                  <div class="pill" data-group="newsverdict">Broke it — news overrode structure</div>
+                  <div class="pill" data-group="newsverdict">Mixed — partial delivery</div>
+                  <div class="pill" data-group="newsverdict">N/A — no news this session</div>
+                </div>
+              </div>
+            </div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-g" onclick="ns()">next →</button></div>
+          </div>
+
+          <div class="step" id="s9">
+            <div class="sb2"><span class="sbn">09</span><span class="sbt">Truth + Self-Development</span><span class="sbo">9 / 9</span></div>
+            <div class="field"><label>ONE SENTENCE TRUTH</label><textarea id="f-tru" style="min-height:55px" placeholder='"Price expanded from the reaction zone without engineering deeper liquidity, showing urgency."'></textarea></div>
+            <div class="field"><label>LESSON MARKUP — ANNOTATED CHART</label>
+              <div class="uz"><input type="file" accept="image/*" multiple onchange="handleImg(event,'les')"><div class="uzl">Drop annotated chart here or <span>browse</span></div></div>
+              <div class="pw" id="prev-les"></div>
+              <div class="cs"><div class="cst">TRADINGVIEW LINK</div><input type="url" id="f-link-les" placeholder="https://www.tradingview.com/chart/..."></div>
+            </div>
+            <div class="field"><label>WHAT I DID WELL</label><textarea id="f-wel" style="min-height:55px"></textarea></div>
+            <div class="field"><label>WHAT I MUST IMPROVE</label><textarea id="f-imp" style="min-height:55px"></textarea></div>
+            <div class="field"><label>CARRY FORWARD INTO TOMORROW</label><textarea id="f-car" style="min-height:55px"></textarea></div>
+            <div class="sn"><button class="btn btn-h" onclick="ps()">← back</button><button class="btn btn-s" onclick="saveSession()">save session — lock it in</button></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CALENDAR -->
+      <div class="view" id="v-calendar">
+        <div class="ph"><div><div class="pt">Calendar</div><div class="ps">CLICK ANY DAY TO SEE FULL SESSION DETAIL</div></div></div>
+        <div class="cal-hdr">
+          <div class="cal-month" id="cal-month-label"></div>
+          <div class="cal-nav"><button onclick="calPrev()">← prev</button><button onclick="calNext()">next →</button></div>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+
+      <!-- WEEKLY REVIEW -->
+      <div class="view" id="v-weekly">
+        <div class="ph">
+          <div><div class="pt">Weekly Review</div><div class="ps">HOW DID YOU PERFORM THIS WEEK</div></div>
+          <button class="btn btn-g btn-sm" onclick="showWF()">+ new review</button>
+        </div>
+
+        <div id="weekly-form" style="display:none;max-width:680px;margin-bottom:24px">
+          <div class="card">
+            <div style="font-family:var(--fm);font-size:9px;letter-spacing:1px;color:var(--gold);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)">WEEKLY REVIEW ENTRY</div>
+            <div class="r2">
+              <div class="field"><label>WEEK OF</label><input type="text" id="wr-week" placeholder="Week of 24 Mar 2026"></div>
+              <div class="field"><label>OVERALL WEEK RATING</label>
+                <select id="wr-rating"><option value="">Select...</option><option>A — Executed the model cleanly</option><option>B — Mostly good, some lapses</option><option>C — Struggled, patterns present</option><option>F — Dangerous week, review needed</option></select>
+              </div>
+            </div>
+            <div class="r2">
+              <div class="field"><label>P&amp;L / RR SUMMARY</label><input type="text" id="wr-pnl" placeholder="e.g. +3.2R net, 4 trades"></div>
+              <div class="field"><label>SESSIONS THIS WEEK</label><input type="text" id="wr-sessions" placeholder="e.g. 5 sessions, 3 traded"></div>
+            </div>
+            <div class="field"><label>BEST SESSION THIS WEEK + WHY</label>
+              <textarea id="wr-best" style="min-height:80px" placeholder="Which session felt most aligned? What made it work? What did you read correctly?"></textarea>
+            </div>
+            <div class="field"><label>WORST SESSION THIS WEEK + WHY</label>
+              <textarea id="wr-worst" style="min-height:80px" placeholder="Which session was the most off? What went wrong? Was it the model, execution, or emotion?"></textarea>
+            </div>
+            <div class="field"><label>KEY PATTERN I NOTICED THIS WEEK</label>
+              <textarea id="wr-pattern" style="min-height:80px" placeholder="What behavioral pattern showed up repeatedly? In price or in yourself?"></textarea>
+            </div>
+            <div class="field"><label>FULL WEEK NARRATIVE — free write</label>
+              <textarea id="wr-narrative" style="min-height:120px" placeholder="Write the full story of the week. How did price behave overall? Where were you in sync across the week? What was the dominant theme? Be honest."></textarea>
+            </div>
+            <div class="field"><label>CARRYING INTO NEXT WEEK</label>
+              <textarea id="wr-carry" style="min-height:80px" placeholder="What are you taking forward? A lesson, a rule you need to enforce, a behavior to watch for?"></textarea>
+            </div>
+            <div class="sn">
+              <button class="btn btn-h" onclick="hideWF()">cancel</button>
+              <button class="btn btn-g" onclick="saveWeekly()">save review →</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="weekly-list"></div>
+      </div>
+
+      <!-- NEWS IMPACT -->
+      <div class="view" id="v-news">
+        <div class="ph"><div><div class="pt">News Impact</div><div class="ps">HOW RELEASES AFFECT YOUR MODEL OVER TIME</div></div></div>
+
+        <!-- KPI STRIP -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px" id="news-kpis">
+          <div class="kpi go"><div class="kl">NEWS SESSIONS</div><div class="kv" id="nk-total" style="font-family:var(--fm);font-size:17px">–</div><div class="kd">total logged</div></div>
+          <div class="kpi gr"><div class="kl">MODEL HELD UP</div><div class="kv" id="nk-held" style="font-family:var(--fm);font-size:17px">–</div><div class="kd">confirmed delivery</div></div>
+          <div class="kpi re"><div class="kl">MODEL BROKEN</div><div class="kv" id="nk-broke" style="font-family:var(--fm);font-size:17px">–</div><div class="kd">news overrode structure</div></div>
+          <div class="kpi bl"><div class="kl">BEST APPROACH</div><div class="kv" id="nk-best" style="font-family:var(--fm);font-size:13px;line-height:1.2">–</div><div class="kd">pre vs post entry</div></div>
+        </div>
+
+        <!-- PRE vs POST -->
+        <div class="sh">PRE-NEWS ENTRY vs POST-NEWS ENTRY</div>
+        <div class="g2" style="margin-bottom:24px">
+          <div class="card">
+            <div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--gold);margin-bottom:14px;font-style:italic">Pre-news entries</div>
+            <div class="cvr"><span class="cvm">Sessions</span><span class="cvn" id="pre-n">0</span></div>
+            <div class="cvr"><span class="cvm">Model held up</span><span class="cvn" id="pre-held">–</span></div>
+            <div class="cvr"><span class="cvm">Model broken</span><span class="cvn" id="pre-broke">–</span></div>
+            <div class="cvr"><span class="cvm">A+/A execution</span><span class="cvn" id="pre-exec">–</span></div>
+          </div>
+          <div class="card">
+            <div style="font-family:var(--fd);font-size:13px;font-weight:700;color:var(--blue3);margin-bottom:14px;font-style:italic">Post-news entries</div>
+            <div class="cvr"><span class="cvm">Sessions</span><span class="cvn" id="post-n">0</span></div>
+            <div class="cvr"><span class="cvm">Model held up</span><span class="cvn" id="post-held">–</span></div>
+            <div class="cvr"><span class="cvm">Model broken</span><span class="cvn" id="post-broke">–</span></div>
+            <div class="cvr"><span class="cvm">A+/A execution</span><span class="cvn" id="post-exec">–</span></div>
+          </div>
+        </div>
+
+        <!-- NEWS vs NO NEWS EXECUTION -->
+        <div class="sh">NEWS SESSIONS vs CLEAN SESSIONS — EXECUTION QUALITY</div>
+        <div class="g2" style="margin-bottom:24px">
+          <div class="card" style="padding:14px">
+            <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:10px;letter-spacing:.5px">NEWS SESSIONS</div>
+            <div id="news-exec-bars"></div>
+          </div>
+          <div class="card" style="padding:14px">
+            <div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:10px;letter-spacing:.5px">CLEAN SESSIONS (NO NEWS)</div>
+            <div id="clean-exec-bars"></div>
+          </div>
+        </div>
+
+        <!-- EFFECT TYPE BREAKDOWN -->
+        <div class="sh">EFFECT TYPE — WHAT NEWS DOES TO YOUR MODEL MOST</div>
+        <div class="card" style="padding:14px;margin-bottom:24px"><div id="news-effect-full-bars"></div></div>
+
+        <!-- BY EVENT TYPE -->
+        <div class="sh">BY NEWS EVENT — WHICH RELEASES AFFECT YOU MOST</div>
+        <div class="card" style="padding:16px;margin-bottom:24px" id="news-event-breakdown">
+          <div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>
+        </div>
+
+        <!-- SESSION LOG -->
+        <div class="sh">ALL NEWS SESSIONS — FULL LOG</div>
+        <div id="news-session-log" style="display:flex;flex-direction:column;gap:8px;margin-bottom:24px">
+          <div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>
+        </div>
+      </div>
+
+    </div><!-- end content -->
+  </div><!-- end main -->
+</div><!-- end shell -->
+
+<!-- SESSION MODAL -->
+<div class="mo" id="session-modal" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh"><div class="mt2" id="modal-title"></div><button class="mc" onclick="closeModal()">close ✕</button></div>
+    <div class="mb" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lbx" id="lbx" onclick="closeLB()"><img id="lbx-img" src="" alt=""></div>
+
+<script>
+const STEPS=9;
+let cur=1,pst={},sessions=[],biases=[],imgs={pre:[],hap:[],les:[],bias:[]};
+let calY=new Date().getFullYear(),calM=new Date().getMonth();
+let weeklies=[];
+
+function loadData(){
+  try{const d=localStorage.getItem('ep-v5');if(d)sessions=JSON.parse(d);}catch(e){}
+  try{const d=localStorage.getItem('ep-bias-v2');if(d)biases=JSON.parse(d);}catch(e){}
+  try{const d=localStorage.getItem('ep-weekly-v1');if(d)weeklies=JSON.parse(d);}catch(e){}
+  refreshAll();
+}
+function saveData(){
+  try{localStorage.setItem('ep-v5',JSON.stringify(sessions));}catch(e){
+    try{localStorage.setItem('ep-v5',JSON.stringify(sessions.map(s=>({...s,imgs:{pre:[],hap:[],les:[]}}))));}catch(e2){}
+  }
+}
+function saveBiasData(){try{localStorage.setItem('ep-bias-v2',JSON.stringify(biases));}catch(e){}}
+function saveWeeklyData(){try{localStorage.setItem('ep-weekly-v1',JSON.stringify(weeklies));}catch(e){}}
+
+function nav(id){
+  const ids=['dashboard','bias','log','calendar','weekly','news'];
+  document.querySelectorAll('.si').forEach((el,i)=>el.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.tn').forEach((el,i)=>el.classList.toggle('active',ids[i]===id));
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('v-'+id).classList.add('active');
+  if(id==='dashboard')renderDash();
+  if(id==='bias')renderBiasList();
+  if(id==='calendar')renderCal();
+  if(id==='weekly')renderWeeklyList();
+  if(id==='news')renderNewsTab();
+}
+
+document.querySelectorAll('.pill').forEach(p=>{
+  p.addEventListener('click',function(){
+    const g=this.dataset.group;
+    document.querySelectorAll('.pill[data-group="'+g+'"]').forEach(x=>x.classList.remove('sel'));
+    this.classList.add('sel');pst[g]=this.textContent.trim();
+    if(g==='trd'){
+      const ntw=document.getElementById('no-trade-win-section');
+      if(ntw)ntw.style.display=this.textContent.includes('No')?'block':'none';
+    }
+  });
+});
+
+function gradeBtn(btn,hiddenId,grade){
+  const wrap=btn.parentElement;
+  wrap.querySelectorAll('button').forEach(b=>{
+    b.style.background='transparent';b.style.color='var(--muted2)';b.style.borderColor='var(--border2)';
+  });
+  const colors={A:'var(--green3)',B:'var(--orange3)',C:'var(--red3)'};
+  btn.style.background=colors[grade]||'var(--gold)';
+  btn.style.color='var(--bg)';btn.style.borderColor='transparent';
+  document.getElementById(hiddenId).value=grade;
+}
+function sessionGradeBtn(btn,grade){
+  btn.parentElement.querySelectorAll('button').forEach(b=>{
+    b.style.background='transparent';b.style.color='var(--muted2)';b.style.borderColor='var(--border2)';
+  });
+  const colors={A:'var(--green3)',B:'var(--orange3)',C:'var(--red3)'};
+  btn.style.background=colors[grade];btn.style.color='var(--bg)';btn.style.borderColor='transparent';
+  document.getElementById('session-overall-grade').value=grade;
+}
+function addTrade2(){
+  document.getElementById('trade2-wrap').style.display='block';
+  document.getElementById('add-trade2-btn').style.display='none';
+}
+function getTrades(){
+  const criteria=['entry','stop','target','management','patience','risk','exit'];
+  const t1={dir:gv('tg1-dir'),outcome:gv('tg1-out')};
+  criteria.forEach(c=>{t1[c+'Grade']=document.getElementById('tg1-'+c+'-grade')?.value||'';t1[c+'Note']=gv('tg1-'+c+'-note');});
+  const t2wrap=document.getElementById('trade2-wrap');
+  const trades=[t1];
+  if(t2wrap&&t2wrap.style.display!=='none'){
+    const t2={dir:gv('tg2-dir'),outcome:gv('tg2-out')};
+    criteria.forEach(c=>{t2[c+'Grade']=document.getElementById('tg2-'+c+'-grade')?.value||'';t2[c+'Note']=gv('tg2-'+c+'-note');});
+    trades.push(t2);
+  }
+  return trades;
+}
+  document.getElementById('pbar').style.width=(cur/STEPS*100)+'%';
+  const w=document.getElementById('sdots');w.innerHTML='';
+  for(let i=1;i<=STEPS;i++){const d=document.createElement('div');d.className='sd'+(i<cur?' done':i===cur?' active':'');w.appendChild(d);}
+}
+function showStep(n){document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));document.getElementById('s'+n).classList.add('active');updProg();}
+function ns(){if(cur<STEPS){cur++;showStep(cur);}}
+function ps(){if(cur>1){cur--;showStep(cur);}}
+function gv(id){return(document.getElementById(id)||{}).value||'';}
+
+function handleImg(e,key){
+  Array.from(e.target.files).forEach(file=>{
+    const r=new FileReader();r.onload=ev=>{imgs[key].push(ev.target.result);renderPrev(key);};r.readAsDataURL(file);
+  });
+}
+function renderPrev(key){
+  const w=document.getElementById('prev-'+key);if(!w)return;w.innerHTML='';
+  imgs[key].forEach((src,i)=>{
+    const d=document.createElement('div');d.className='thumb';
+    d.innerHTML='<img src="'+src+'" alt=""><button class="thr" onclick="removeImg(\''+key+'\','+i+')">×</button>';
+    w.appendChild(d);
+  });
+}
+function removeImg(key,idx){imgs[key].splice(idx,1);renderPrev(key);}
+function openLB(src){document.getElementById('lbx-img').src=src;document.getElementById('lbx').classList.add('open');}
+function closeLB(){document.getElementById('lbx').classList.remove('open');}
+
+function saveSession(){
+  const s={
+    id:Date.now(),date:gv('f-date'),session:gv('f-sess'),day:pst.day||'',
+    bias:gv('f-bias'),bconf:gv('f-bconf'),conviction:parseInt(gv('f-conv'))||5,
+    expectation:gv('f-exp'),invalidation:gv('f-inv'),
+    daytype:pst.dt||'',speed:gv('f-spd'),liquidity:gv('f-liq'),
+    sync:pst.sync||'',trusted:pst.tr||'',hesitated:pst.hes||'',forcedBias:pst.fb||'',
+    traded:pst.trd||'',exec:gv('f-exec'),emotion:gv('f-emo'),aligned:pst.aln||'',
+    stateBeforeEntry:pst.state||'',
+    stayedOut:pst.stayout||'',stayedOutWhy:gv('f-stayout-why'),
+    deviated:pst.dev||'',deviationType:gv('f-devtype'),deviationDesc:gv('f-devdesc'),
+    biasFlip:pst.flip||'',biasFlipResult:pst.flipr||'',
+    happened:gv('f-hap'),confused:gv('f-conf'),lesson:gv('f-les'),
+    newsPresent:pst.news||'',newsName:gv('f-newsname'),newsTime:gv('f-newstime'),
+    newsPosition:pst.newspos||'',newsEffect:pst.newseffect||'',
+    newsTraded:pst.newstraded||'',newsNotes:gv('f-newsnotes'),newsVerdict:pst.newsverdict||'',
+    tradeGrades:getTrades(),
+    sessionGrade:document.getElementById('session-overall-grade')?.value||'',
+    sessionGradeReason:gv('session-grade-reason'),
+    truth:gv('f-tru'),well:gv('f-wel'),improve:gv('f-imp'),carry:gv('f-car'),
+    imgs:{pre:[...imgs.pre],hap:[...imgs.hap],les:[...imgs.les]},
+    links:{pre:gv('f-link-pre'),hap:gv('f-link-hap'),les:gv('f-link-les')},
+  };
+  sessions.unshift(s);saveData();resetForm();nav('dashboard');
+}
+function resetForm(){
+  cur=1;showStep(1);
+  Object.keys(pst).forEach(k=>delete pst[k]);
+  imgs.pre=[];imgs.hap=[];imgs.les=[];
+  ['prev-pre','prev-hap','prev-les'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('sel'));
+  document.querySelectorAll('select').forEach(s=>s.value='');
+  document.querySelectorAll('textarea,input[type=text],input[type=url]').forEach(el=>el.value='');
+  document.getElementById('f-conv').value=5;document.getElementById('cd').textContent='5';
+  const ntw=document.getElementById('no-trade-win-section');if(ntw)ntw.style.display='none';
+  document.querySelectorAll('#trade-grades-wrap button,#trade2-wrap button,#s7 .sn button:not(.btn-h):not(.btn-g)').forEach(b=>{b.style.background='transparent';b.style.color='var(--muted2)';b.style.borderColor='var(--border2)';});
+  document.querySelectorAll('[id$="-grade"]').forEach(el=>{if(el.tagName==='INPUT')el.value='';});
+  const t2=document.getElementById('trade2-wrap');if(t2)t2.style.display='none';
+  const ab=document.getElementById('add-trade2-btn');if(ab)ab.style.display='block';
+}
+
+// BIAS LAB
+function showBF(){document.getElementById('bias-form').style.display='block';window.scrollTo(0,0);}
+function hideBF(){document.getElementById('bias-form').style.display='none';}
+function saveBias(){
+  const b={id:Date.now(),week:gv('bf-week'),tf:gv('bf-tf'),drawing:gv('bf-drawing'),structure:gv('bf-structure'),highs:gv('bf-highs'),lows:gv('bf-lows'),pois:gv('bf-pois'),conviction:gv('bf-conviction'),direction:pst.bdir||'',imgs:[...imgs.bias],link:gv('bf-link')};
+  biases.unshift(b);saveBiasData();
+  imgs.bias=[];renderPrev('bias');
+  document.querySelectorAll('[data-group="bdir"]').forEach(p=>p.classList.remove('sel'));delete pst.bdir;
+  ['bf-week','bf-drawing','bf-structure','bf-highs','bf-lows','bf-pois','bf-conviction','bf-link'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('bf-tf').value='';
+  hideBF();renderBiasList();
+}
+function renderBiasList(){
+  const w=document.getElementById('bias-list');
+  if(!biases.length){w.innerHTML='<div class="es"><div class="em">bias lab</div>No entries yet.<br>Write your weekly read before Monday opens.</div>';return;}
+  const dc={'Bullish':'var(--green3)','Bearish':'var(--red3)','Neutral — Wait':'var(--muted2)','Conditional':'var(--orange3)'};
+  w.innerHTML=biases.map(b=>`
+    <div class="bc">
+      <div class="bc-top">
+        <div>
+          <div class="bc-week">${b.week||'No date'}${b.tf?' · '+b.tf:''}</div>
+          ${b.direction?`<div class="bc-dir" style="color:${dc[b.direction]||'var(--cream)'}">${b.direction.toUpperCase()}</div>`:''}
+        </div>
+        ${b.imgs&&b.imgs.length?`<img src="${b.imgs[0]}" style="width:56px;height:42px;object-fit:cover;border-radius:5px;border:1px solid var(--border2);cursor:pointer;flex-shrink:0" onclick="openLB('${b.imgs[0]}')">`:''}
+      </div>
+      ${b.drawing?`<div class="bc-body"><span style="font-family:var(--fm);font-size:8px;color:var(--muted2);letter-spacing:.5px">DRAWING TO</span><br>${b.drawing}</div>`:''}
+      ${b.structure?`<div class="bc-body" style="margin-top:6px;color:var(--muted2)">${b.structure}</div>`:''}
+      ${b.conviction?`<div class="bc-body" style="margin-top:6px;font-style:italic;color:var(--muted2);font-size:11px">${b.conviction}</div>`:''}
+      <div class="bc-levels">
+        ${b.highs?`<span class="lt">H: ${b.highs.substring(0,28)}${b.highs.length>28?'...':''}</span>`:''}
+        ${b.lows?`<span class="lt">L: ${b.lows.substring(0,28)}${b.lows.length>28?'...':''}</span>`:''}
+        ${b.pois?`<span class="lt">POI: ${b.pois.substring(0,28)}${b.pois.length>28?'...':''}</span>`:''}
+        ${b.link?`<a href="${b.link}" target="_blank" style="font-family:var(--fm);font-size:8px;color:var(--blue3);text-decoration:none">chart ↗</a>`:''}
+      </div>
+    </div>
+  `).join('');
+}
+
+// CALENDAR
+function calPrev(){calM--;if(calM<0){calM=11;calY--;}renderCal();}
+function calNext(){calM++;if(calM>11){calM=0;calY++;}renderCal();}
+function renderCal(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent=months[calM]+' '+calY;
+  const grid=document.getElementById('cal-grid');
+  grid.innerHTML='';
+  ['mon','tue','wed','thu','fri','sat','sun'].forEach(d=>{const el=document.createElement('div');el.className='cal-dow';el.textContent=d.toUpperCase();grid.appendChild(el);});
+  const firstDay=new Date(calY,calM,1).getDay();
+  const days=new Date(calY,calM+1,0).getDate();
+  const today=new Date();
+  const offset=firstDay===0?6:firstDay-1;
+  for(let i=0;i<offset;i++){const e=document.createElement('div');e.className='cal-day empty';grid.appendChild(e);}
+  for(let d=1;d<=days;d++){
+    const daySess=sessions.filter(s=>s.date&&matchDate(s.date,d,calY,calM));
+    const el=document.createElement('div');
+    const isToday=d===today.getDate()&&calM===today.getMonth()&&calY===today.getFullYear();
+    el.className='cal-day'+(isToday?' today':'')+(daySess.length?' has-sessions':'');
+    const sc={'London':'cb-l','NY':'cb-n','Both':'cb-b','Observation Only':'cb-o'};
+    const ec={'A+':'dap','A':'da','B':'db3','Forced':'df'};
+    el.innerHTML=`<div class="cdn">${d}</div><div class="cbs">${daySess.map(s=>`<div class="cb ${sc[s.session]||'cb-o'}"><div class="cdot ${ec[s.exec]||'dn'}"></div>${s.session||'–'}</div>`).join('')}</div>`;
+    if(daySess.length)el.onclick=()=>openSessionModal(daySess);
+    grid.appendChild(el);
+  }
+}
+function matchDate(ds,d,yr,mo){
+  if(!ds)return false;
+  const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+  const l=ds.toLowerCase();
+  const hasDay=l.includes(' '+d+' ')||l.includes(' '+d+',')||l.endsWith(' '+d)||l.startsWith(d+' ')||l.includes('/'+d+'/')||l.includes('-'+String(d).padStart(2,'0'));
+  return hasDay&&l.includes(months[mo])&&l.includes(String(yr));
+}
+
+// SESSION DETAIL MODAL
+function openSessionModal(daySess){
+  const ec={'A+':'ap','A':'a','B':'b','Forced':'ff'};
+  document.getElementById('modal-title').textContent=daySess[0].date+' — '+daySess.length+' session'+(daySess.length>1?'s':'');
+  document.getElementById('modal-body').innerHTML=daySess.map(s=>`
+    <div class="ds2">
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <span style="font-family:var(--fm);font-size:10px;font-weight:500;color:var(--gold)">${s.session||'–'} · ${s.day||'–'}</span>
+        ${s.exec?`<span class="badge b${ec[s.exec]||'a'}">${s.exec}</span>`:''}
+        ${s.sync==='Out Of Sync'?'<span class="badge boos">OOS</span>':''}
+        ${s.biasFlip&&s.biasFlip.includes('flipped')?`<span class="badge ${s.biasFlipResult&&s.biasFlipResult.includes('confirmed')?'bflw':'bfl'}">${s.biasFlipResult&&s.biasFlipResult.includes('confirmed')?'FLIP ✓':'FLIP'}</span>`:''}
+      </div>
+      <div class="dst">PRE-SESSION</div>
+      <div class="dg2">
+        <div class="di"><div class="dil">HTF BIAS</div><div class="div2">${s.bias||'–'}</div></div>
+        <div class="di"><div class="dil">CONFIDENCE</div><div class="div2">${s.bconf||'–'}</div></div>
+        <div class="di"><div class="dil">CONVICTION</div><div class="div2">${s.conviction}/10</div></div>
+      </div>
+      ${s.expectation?`<div class="dt2">${s.expectation}</div>`:''}
+      ${s.invalidation?`<div class="dt2" style="font-size:11px;font-style:italic;color:var(--muted2)">If wrong: ${s.invalidation}</div>`:''}
+      ${rdCharts([s.imgs&&s.imgs.pre],[s.links&&s.links.pre],['Pre-session chart'])}
+
+      <div class="dst" style="margin-top:14px">MARKET BEHAVIOR</div>
+      <div class="dg2">
+        <div class="di"><div class="dil">DAY TYPE</div><div class="div2">${s.daytype||'–'}</div></div>
+        <div class="di"><div class="dil">DELIVERY</div><div class="div2">${s.speed||'–'}</div></div>
+        <div class="di"><div class="dil">LIQUIDITY</div><div class="div2">${s.liquidity||'–'}</div></div>
+      </div>
+
+      <div class="dst" style="margin-top:14px">SYNCHRONIZATION</div>
+      <div class="dg2">
+        <div class="di"><div class="dil">IN SYNC</div><div class="div2">${s.sync||'–'}</div></div>
+        <div class="di"><div class="dil">TRUSTED PRICE</div><div class="div2">${s.trusted||'–'}</div></div>
+        <div class="di"><div class="dil">FORCED BIAS</div><div class="div2">${s.forcedBias||'–'}</div></div>
+      </div>
+
+      <div class="dst" style="margin-top:14px">EXECUTION</div>
+      <div class="dg2">
+        <div class="di"><div class="dil">STATE BEFORE</div><div class="div2">${s.stateBeforeEntry||'–'}</div></div>
+        <div class="di"><div class="dil">TRADED</div><div class="div2">${s.traded||'–'}</div></div>
+        <div class="di"><div class="dil">QUALITY</div><div class="div2">${s.exec||'–'}</div></div>
+      </div>
+      <div class="dg2" style="margin-top:6px">
+        <div class="di"><div class="dil">EMOTION</div><div class="div2">${s.emotion||'–'}</div></div>
+        <div class="di"><div class="dil">ALIGNED</div><div class="div2">${s.aligned||'–'}</div></div>
+        <div class="di"><div class="dil">STAYED OUT</div><div class="div2">${s.stayedOut||'–'}</div></div>
+      </div>
+      ${s.stayedOutWhy?`<div class="dt2"><span style="font-family:var(--fm);font-size:8px;color:var(--green3)">DISCIPLINE REASON</span><br>${s.stayedOutWhy}</div>`:''}
+      ${s.deviated&&s.deviated.includes('deviated')?`<div class="dt2" style="border-left:2px solid var(--red3);border-radius:0;padding-left:10px"><span style="font-family:var(--fm);font-size:8px;color:var(--red3)">FIRST DEVIATION — ${s.deviationType||'unspecified'}</span><br>${s.deviationDesc||'No description'}</div>`:''}
+      <div class="dg2" style="margin-top:6px">
+        <div class="di"><div class="dil">BIAS FLIP</div><div class="div2">${s.biasFlip||'–'}</div></div>
+        <div class="di"><div class="dil">FLIP RESULT</div><div class="div2">${s.biasFlipResult||'–'}</div></div>
+        <div class="di"><div class="dil">DEVIATION</div><div class="div2">${s.deviated||'–'}</div></div>
+      </div>
+
+      <div class="dst" style="margin-top:14px">NARRATIVE</div>
+      ${s.happened?`<div class="dt2">${s.happened}</div>`:''}
+      ${s.confused?`<div class="dt2" style="border-left:2px solid var(--orange2);border-radius:0;padding-left:10px">${s.confused}</div>`:''}
+      ${rdCharts([s.imgs&&s.imgs.hap],[s.links&&s.links.hap],['What happened'])}
+
+      <div class="dst" style="margin-top:14px">LESSON + TRUTH</div>
+      ${s.truth?`<div class="dt2" style="font-style:italic;color:var(--muted2)">"${s.truth}"</div>`:''}
+      ${rdCharts([s.imgs&&s.imgs.les],[s.links&&s.links.les],['Lesson markup'])}
+      ${s.newsPresent==='Yes'?`
+      <div class="dst" style="margin-top:14px">NEWS IMPACT</div>
+      <div class="dg2">
+        <div class="di"><div class="dil">EVENT</div><div class="div2">${s.newsName||'–'}</div></div>
+        <div class="di"><div class="dil">TIME</div><div class="div2">${s.newsTime||'–'}</div></div>
+        <div class="di"><div class="dil">SETUP POSITION</div><div class="div2" style="font-size:10px">${s.newsPosition||'–'}</div></div>
+      </div>
+      <div class="dg2" style="margin-top:6px">
+        <div class="di"><div class="dil">EFFECT</div><div class="div2" style="font-size:10px">${s.newsEffect||'–'}</div></div>
+        <div class="di"><div class="dil">TRADED AROUND</div><div class="div2" style="font-size:10px">${s.newsTraded||'–'}</div></div>
+        <div class="di"><div class="dil">MODEL VERDICT</div><div class="div2" style="font-size:10px;color:${s.newsVerdict&&s.newsVerdict.includes('Confirmed')?'var(--green3)':s.newsVerdict&&s.newsVerdict.includes('Broke')?'var(--red3)':'var(--cream)'}">${s.newsVerdict||'–'}</div></div>
+      </div>
+      ${s.newsNotes?`<div class="dt2" style="border-left:2px solid var(--gold);border-radius:0;padding-left:10px">${s.newsNotes}</div>`:''}`:''}
+
+      <div class="dst" style="margin-top:14px">SELF-DEVELOPMENT</div>
+      ${s.sessionGrade?`<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="font-family:var(--fm);font-size:9px;color:var(--muted2)">OVERALL SESSION GRADE</div>
+        <div style="font-family:var(--fm);font-size:18px;font-weight:700;color:${s.sessionGrade==='A'?'var(--green3)':s.sessionGrade==='B'?'var(--orange3)':'var(--red3)'}">${s.sessionGrade}</div>
+      </div>`:''}
+      ${s.sessionGradeReason?`<div class="dt2" style="margin-bottom:10px">${s.sessionGradeReason}</div>`:''}
+      ${s.tradeGrades&&s.tradeGrades.length?s.tradeGrades.map((t,i)=>`
+        <div style="background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:8px">
+          <div style="font-family:var(--fm);font-size:9px;color:var(--gold);margin-bottom:8px">TRADE ${i+1} — ${t.dir||'–'} — ${t.outcome||'–'}</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+            ${['entry','stop','target','management','patience','risk','exit'].map((c,ci)=>t[c+'Grade']?`<div style="background:var(--bg4);border-radius:5px;padding:7px 8px;text-align:center">
+              <div style="font-family:var(--fm);font-size:7px;color:var(--muted2);margin-bottom:3px">${['ENTRY','STOP','TARGET','MGMT','PATIENCE','RISK','EXIT'][ci]}</div>
+              <div style="font-family:var(--fm);font-size:13px;font-weight:700;color:${t[c+'Grade']==='A'?'var(--green3)':t[c+'Grade']==='B'?'var(--orange3)':'var(--red3)'}">${t[c+'Grade']}</div>
+              ${t[c+'Note']?`<div style="font-size:9px;color:var(--muted2);margin-top:3px">${t[c+'Note']}</div>`:''}
+            </div>`:''
+            ).filter(Boolean).join('')}
+          </div>
+        </div>`).join(''):''}
+
+      ${s.well?`<div class="dt2"><span style="font-family:var(--fm);font-size:8px;color:var(--green3)">DID WELL</span><br>${s.well}</div>`:''}
+      ${s.improve?`<div class="dt2"><span style="font-family:var(--fm);font-size:8px;color:var(--red3)">MUST IMPROVE</span><br>${s.improve}</div>`:''}
+      ${s.carry?`<div class="dt2"><span style="font-family:var(--fm);font-size:8px;color:var(--blue3)">CARRY FORWARD</span><br>${s.carry}</div>`:''}
+    </div>
+  `).join('');
+  document.getElementById('session-modal').classList.add('open');
+}
+function rdCharts(imgArrays,links,labels){
+  const blocks=imgArrays.map((arr,i)=>{
+    if((!arr||!arr.length)&&!links[i])return'';
+    return`<div class="dcb"><div class="dcl2">${labels[i]||''}</div>${(arr||[]).map(src=>`<img class="dci" src="${src}" onclick="openLB('${src}')" alt="">`).join('')}${links[i]?`<a class="dca" href="${links[i]}" target="_blank">${links[i]}</a>`:''}</div>`;
+  }).filter(Boolean).join('');
+  return blocks?`<div class="dcharts">${blocks}</div>`:'';
+}
+function closeModal(e){if(!e||e.target===document.getElementById('session-modal'))document.getElementById('session-modal').classList.remove('open');}
+
+// DASHBOARD
+function pct(n,d){return d===0?'–':Math.round(n/d*100)+'%';}
+function renderDash(){
+  const n=sessions.length;
+  document.getElementById('sc-n').textContent=n;document.getElementById('kpi-n').textContent=n;
+  const fl=sessions.filter(s=>s.biasFlip&&s.biasFlip.includes('flipped'));
+  const fw=fl.filter(s=>s.biasFlipResult&&s.biasFlipResult.includes('confirmed')).length;
+  document.getElementById('fl-total').textContent=fl.length;
+  document.getElementById('fl-win').textContent=fw;
+  document.getElementById('fl-loss').textContent=fl.filter(s=>s.biasFlipResult&&s.biasFlipResult.includes('wrong')).length;
+  document.getElementById('kpi-flip').textContent=fl.length>0?pct(fw,fl.length):'–';
+  if(n===0){
+    ['kpi-ap','kpi-fr','kpi-sc'].forEach(id=>document.getElementById(id).textContent='–');
+    document.getElementById('danger-banner').classList.remove('show');
+    document.getElementById('exec-bars').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no data yet</div>';
+    document.getElementById('daytype-bars').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no data yet</div>';
+    document.getElementById('news-effect-bars').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>';
+    document.getElementById('news-total').textContent='–';document.getElementById('news-clean').textContent='–';document.getElementById('news-broken').textContent='–';
+    renderCV();[0,1,2,3,4].forEach(i=>setDS(i,0,false));return;
+  }
+  const traded=sessions.filter(s=>s.traded==='Yes');
+  const tl=traded.length||1;
+  const ap=traded.filter(s=>s.exec==='A+').length;
+  const a=traded.filter(s=>s.exec==='A').length;
+  const b=traded.filter(s=>s.exec==='B').length;
+  const f=traded.filter(s=>s.exec==='Forced').length;
+  const sc=(ap*4+a*3+b*2+f)/tl;
+  document.getElementById('kpi-ap').textContent=pct(ap,tl);
+  document.getElementById('kpi-ap').style.color=ap/tl>=.4?'var(--green3)':ap/tl>=.2?'var(--orange3)':'var(--red3)';
+  document.getElementById('kpi-fr').textContent=pct(f,tl);
+  document.getElementById('kpi-fr').style.color=f/tl>=.2?'var(--red3)':f/tl>=.1?'var(--orange3)':'var(--green3)';
+  document.getElementById('kpi-sc').textContent=sc.toFixed(1);
+  document.getElementById('kpi-sc').style.color=sc>=3?'var(--green3)':sc>=2?'var(--orange3)':'var(--red3)';
+  const d0=f,thr=Math.ceil(tl*.15);
+  const d1=sessions.filter(s=>s.sync==='Out Of Sync'&&s.traded==='Yes').length;
+  const d2=sessions.filter(s=>s.forcedBias==='Yes'&&s.traded==='Yes').length;
+  const d3=sessions.filter(s=>s.conviction>=7&&s.sync==='Out Of Sync').length;
+  const d4=sessions.filter(s=>s.daytype==='Unclear'&&s.traded==='Yes').length;
+  const negStates=['Tilted','Rushed','Anxious','Distracted'];
+  const d5=sessions.filter(s=>negStates.includes(s.stateBeforeEntry)&&s.traded==='Yes').length;
+  const d6=sessions.filter(s=>s.deviated&&s.deviated.includes('deviated')).length;
+  // Repeat offender — find most common deviation type this week
+  const thisWeek=sessions.filter(s=>{
+    if(!s.date)return false;
+    const d=new Date();const day=d.getDay();const mon=new Date(d);mon.setDate(d.getDate()-(day===0?6:day-1));
+    const ds=s.date.toLowerCase();
+    const months=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    return months.some((m,i)=>ds.includes(m)&&ds.includes(String(mon.getFullYear())));
+  });
+  const devCounts={};
+  thisWeek.filter(s=>s.deviationType).forEach(s=>{devCounts[s.deviationType]=(devCounts[s.deviationType]||0)+1;});
+  const topDev=Object.entries(devCounts).sort((a,b)=>b[1]-a[1])[0];
+  const repeatOffender=topDev&&topDev[1]>=3?topDev[0]:'–';
+  // Discipline rate
+  const unclearDays=sessions.filter(s=>s.daytype==='Unclear');
+  const stayedOut=sessions.filter(s=>s.stayedOut&&s.stayedOut.includes('stayed out')).length;
+  const disciplineRate=unclearDays.length>0?pct(stayedOut,unclearDays.length):'–';
+  setDS(0,d0,d0>=thr);setDS(1,d1,d1>=2);setDS(2,d2,d2>=3);setDS(3,d3,d3>=3);setDS(4,d4,d4>=2);
+  setDS(5,d5,d5>=2);setDS(6,d6,d6>=3);
+  // Repeat offender
+  const ds7=document.getElementById('ds7');const ds7n=document.getElementById('ds7-n');
+  ds7n.textContent=repeatOffender==='–'?'–':repeatOffender.substring(0,22)+(repeatOffender.length>22?'...':'');
+  ds7.className='ds'+(repeatOffender!=='–'?' danger':' safe');
+  // Discipline rate
+  const ds8=document.getElementById('ds8');const ds8n=document.getElementById('ds8-n');
+  ds8n.textContent=disciplineRate;
+  ds8.className='ds'+(disciplineRate==='–'?' safe':parseInt(disciplineRate)>=80?' safe':parseInt(disciplineRate)>=50?' warn':' danger');
+  const fires=[d0>=thr,d1>=2,d2>=3,d3>=3,d4>=2,d5>=2,d6>=3,repeatOffender!=='–'].filter(Boolean).length;
+  const bn=document.getElementById('danger-banner');
+  if(fires>=2){bn.textContent='⚠ '+fires+' danger signals active — review your patterns before you trade again.';bn.classList.add('show');}
+  else bn.classList.remove('show');
+  renderCV();renderExecBars(ap,a,b,f);renderDTBars();renderNewsBars();
+}
+function renderNewsBars(){
+  const newsSessions=sessions.filter(s=>s.newsPresent==='Yes');
+  const total=newsSessions.length;
+  document.getElementById('news-total').textContent=total||'–';
+  if(total===0){
+    document.getElementById('news-clean').textContent='–';
+    document.getElementById('news-broken').textContent='–';
+    document.getElementById('news-effect-bars').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>';
+    return;
+  }
+  const clean=newsSessions.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Confirmed')).length;
+  const broken=newsSessions.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Broke')).length;
+  document.getElementById('news-clean').textContent=pct(clean,total);
+  document.getElementById('news-broken').textContent=pct(broken,total);
+  const effects=[
+    ['No effect — model delivered clean','var(--green2)'],
+    ['Accelerated my direction','var(--blue3)'],
+    ['Caused a stop hunt then continued','var(--orange2)'],
+    ['Created a fake move then reversed','var(--orange3)'],
+    ['Killed the setup entirely','var(--red2)'],
+    ['Made price unpredictable','var(--red3)'],
+  ];
+  const mx=Math.max(...effects.map(([e])=>newsSessions.filter(s=>s.newsEffect===e).length),1);
+  const w=document.getElementById('news-effect-bars');
+  w.innerHTML=effects.map(([e,c])=>{
+    const v=newsSessions.filter(s=>s.newsEffect===e).length;
+    const lbl=e.length>28?e.substring(0,28)+'...':e;
+    return`<div class="br"><div class="bl2" style="width:140px;font-size:8px">${lbl}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`;
+  }).join('');
+}
+function setDS(i,v,danger){
+  document.getElementById('ds'+i).className='ds'+(danger?' danger':v>0?' warn':' safe');
+  document.getElementById('ds'+i+'-n').textContent=v;
+}
+function cvS(type){
+  const s=sessions.filter(x=>x.daytype===type);const t=s.filter(x=>x.traded==='Yes');const tl=t.length||1;
+  return{n:s.length,q:pct(t.filter(x=>x.exec==='A+'||x.exec==='A').length,tl),f:pct(t.filter(x=>x.exec==='Forced').length,tl),s:pct(s.filter(x=>x.sync==='Fully In Sync').length,s.length||1)};
+}
+function renderCV(){
+  const c=cvS('Continuation'),r=cvS('Reversal');
+  ['n','q','f','s'].forEach(k=>{document.getElementById('cv-c-'+k).textContent=c[k];document.getElementById('cv-r-'+k).textContent=r[k];});
+}
+function renderExecBars(ap,a,b,f){
+  const w=document.getElementById('exec-bars');const mx=Math.max(ap,a,b,f,1);
+  w.innerHTML=[['A+',ap,'var(--green2)'],['A',a,'var(--blue3)'],['B',b,'var(--orange2)'],['Forced',f,'var(--red2)']].map(([l,v,c])=>`<div class="br"><div class="bl2">${l}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`).join('');
+}
+function renderDTBars(){
+  const w=document.getElementById('daytype-bars');
+  const types=[['Continuation','var(--blue3)'],['Reversal','var(--orange2)'],['Rotational','var(--gold)'],['News-Driven','var(--green2)'],['Mixed','var(--muted2)'],['Unclear','var(--red2)']];
+  const mx=Math.max(...types.map(([t])=>sessions.filter(s=>s.daytype===t).length),1);
+  w.innerHTML=types.map(([t,c])=>{const v=sessions.filter(s=>s.daytype===t).length;return`<div class="br"><div class="bl2">${t}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`;}).join('');
+}
+// WEEKLY REVIEW
+function showWF(){document.getElementById('weekly-form').style.display='block';window.scrollTo(0,0);}
+function hideWF(){document.getElementById('weekly-form').style.display='none';}
+function saveWeekly(){
+  const w={
+    id:Date.now(),week:gv('wr-week'),rating:gv('wr-rating'),
+    pnl:gv('wr-pnl'),sessions:gv('wr-sessions'),
+    best:gv('wr-best'),worst:gv('wr-worst'),
+    pattern:gv('wr-pattern'),narrative:gv('wr-narrative'),carry:gv('wr-carry'),
+  };
+  weeklies.unshift(w);saveWeeklyData();
+  ['wr-week','wr-pnl','wr-sessions','wr-best','wr-worst','wr-pattern','wr-narrative','wr-carry'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('wr-rating').value='';
+  hideWF();renderWeeklyList();
+}
+function renderWeeklyList(){
+  const w=document.getElementById('weekly-list');
+  if(!weeklies.length){w.innerHTML='<div class="es"><div class="em">weekly</div>No reviews yet.<br>Write your first review at the end of this week.</div>';return;}
+  const rc={'A — Executed the model cleanly':'var(--green3)','B — Mostly good, some lapses':'var(--blue3)','C — Struggled, patterns present':'var(--orange3)','F — Dangerous week, review needed':'var(--red3)'};
+  const rs={'A — Executed the model cleanly':'A','B — Mostly good, some lapses':'B','C — Struggled, patterns present':'C','F — Dangerous week, review needed':'F'};
+  w.innerHTML=weeklies.map(wr=>`
+    <div class="bc" style="margin-bottom:10px">
+      <div class="bc-top" style="margin-bottom:10px">
+        <div>
+          <div class="bc-week">${wr.week||'No date'}</div>
+          ${wr.rating?`<div style="font-family:var(--fm);font-size:9px;letter-spacing:.5px;margin-top:3px;color:${rc[wr.rating]||'var(--cream)'}">WEEK RATING: ${rs[wr.rating]||wr.rating}</div>`:''}
+        </div>
+        ${wr.pnl||wr.sessions?`<div style="text-align:right">
+          ${wr.pnl?`<div style="font-family:var(--fm);font-size:10px;color:var(--gold)">${wr.pnl}</div>`:''}
+          ${wr.sessions?`<div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:2px">${wr.sessions}</div>`:''}
+        </div>`:''}
+      </div>
+      ${wr.pattern?`<div style="background:rgba(201,168,76,.05);border-left:2px solid var(--gold);padding:8px 10px;border-radius:0 5px 5px 0;margin-bottom:8px;font-size:12px;color:var(--cream);line-height:1.5"><span style="font-family:var(--fm);font-size:8px;color:var(--gold);display:block;margin-bottom:3px">KEY PATTERN</span>${wr.pattern}</div>`:''}
+      ${wr.best?`<div style="background:rgba(34,160,90,.05);border-left:2px solid var(--green2);padding:8px 10px;border-radius:0 5px 5px 0;margin-bottom:6px;font-size:12px;color:var(--cream);line-height:1.5"><span style="font-family:var(--fm);font-size:8px;color:var(--green3);display:block;margin-bottom:3px">BEST SESSION</span>${wr.best}</div>`:''}
+      ${wr.worst?`<div style="background:rgba(192,57,43,.05);border-left:2px solid var(--red2);padding:8px 10px;border-radius:0 5px 5px 0;margin-bottom:6px;font-size:12px;color:var(--cream);line-height:1.5"><span style="font-family:var(--fm);font-size:8px;color:var(--red3);display:block;margin-bottom:3px">WORST SESSION</span>${wr.worst}</div>`:''}
+      ${wr.narrative?`<div style="font-size:12px;color:var(--muted2);line-height:1.6;margin-top:6px;font-style:italic">${wr.narrative}</div>`:''}
+      ${wr.carry?`<div style="margin-top:8px;padding:8px 10px;background:var(--bg4);border-radius:5px;border:1px solid var(--border2)"><span style="font-family:var(--fm);font-size:8px;color:var(--blue3);display:block;margin-bottom:3px">CARRYING FORWARD</span><div style="font-size:12px;color:var(--cream);line-height:1.5">${wr.carry}</div></div>`:''}
+    </div>
+  `).join('');
+}
+
+function renderNewsTab(){
+  const ns=sessions.filter(s=>s.newsPresent==='Yes');
+  const cs=sessions.filter(s=>s.newsPresent!=='Yes');
+  const total=ns.length;
+  document.getElementById('nk-total').textContent=total||'–';
+  if(total===0){
+    ['nk-held','nk-broke','nk-best','pre-n','pre-held','pre-broke','pre-exec','post-n','post-held','post-broke','post-exec'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='–';});
+    ['news-exec-bars','clean-exec-bars','news-effect-full-bars'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no data yet</div>';});
+    document.getElementById('news-event-breakdown').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>';
+    document.getElementById('news-session-log').innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no news sessions logged yet</div>';
+    return;
+  }
+
+  const held=ns.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Confirmed')).length;
+  const broke=ns.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Broke')).length;
+  document.getElementById('nk-held').textContent=pct(held,total);
+  document.getElementById('nk-broke').textContent=pct(broke,total);
+
+  // Pre vs Post
+  const pre=ns.filter(s=>s.newsPosition&&s.newsPosition.includes('pre-news'));
+  const post=ns.filter(s=>s.newsPosition&&s.newsPosition.includes('post-news'));
+  const preHeld=pre.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Confirmed')).length;
+  const postHeld=post.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Confirmed')).length;
+  const preBroke=pre.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Broke')).length;
+  const postBroke=post.filter(s=>s.newsVerdict&&s.newsVerdict.includes('Broke')).length;
+  const preExec=pre.filter(s=>s.exec==='A+'||s.exec==='A').length;
+  const postExec=post.filter(s=>s.exec==='A+'||s.exec==='A').length;
+  document.getElementById('pre-n').textContent=pre.length;
+  document.getElementById('pre-held').textContent=pct(preHeld,pre.length||1);
+  document.getElementById('pre-broke').textContent=pct(preBroke,pre.length||1);
+  document.getElementById('pre-exec').textContent=pct(preExec,pre.length||1);
+  document.getElementById('post-n').textContent=post.length;
+  document.getElementById('post-held').textContent=pct(postHeld,post.length||1);
+  document.getElementById('post-broke').textContent=pct(postBroke,post.length||1);
+  document.getElementById('post-exec').textContent=pct(postExec,post.length||1);
+
+  // Best approach
+  const preScore=pre.length>0?preHeld/pre.length:0;
+  const postScore=post.length>0?postHeld/post.length:0;
+  document.getElementById('nk-best').textContent=pre.length===0&&post.length===0?'–':preScore>=postScore?'Pre-news':'Post-news';
+
+  // Exec bars helper
+  function execBars(arr,wrapId){
+    const w=document.getElementById(wrapId);
+    if(!arr.length){w.innerHTML='<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no data</div>';return;}
+    const mx=Math.max(...['A+','A','B','Forced'].map(e=>arr.filter(s=>s.exec===e).length),1);
+    w.innerHTML=[['A+','var(--green2)'],['A','var(--blue3)'],['B','var(--orange2)'],['Forced','var(--red2)']].map(([l,c])=>{
+      const v=arr.filter(s=>s.exec===l).length;
+      return`<div class="br"><div class="bl2">${l}</div><div class="bt"><div class="bf" style="width:${Math.round(v/mx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`;
+    }).join('');
+  }
+  execBars(ns,'news-exec-bars');
+  execBars(cs,'clean-exec-bars');
+
+  // Effect type bars
+  const effects=[['No effect — model delivered clean','var(--green2)'],['Accelerated my direction','var(--blue3)'],['Caused a stop hunt then continued','var(--orange2)'],['Created a fake move then reversed','var(--orange3)'],['Killed the setup entirely','var(--red2)'],['Made price unpredictable','var(--red3)']];
+  const efMx=Math.max(...effects.map(([e])=>ns.filter(s=>s.newsEffect===e).length),1);
+  document.getElementById('news-effect-full-bars').innerHTML=effects.map(([e,c])=>{
+    const v=ns.filter(s=>s.newsEffect===e).length;
+    const lbl=e.length>32?e.substring(0,32)+'...':e;
+    return`<div class="br"><div class="bl2" style="width:150px;font-size:8px">${lbl}</div><div class="bt"><div class="bf" style="width:${Math.round(v/efMx*100)}%;background:${c}"></div></div><div class="bv">${v}</div></div>`;
+  }).join('');
+
+  // By event type
+  const eventMap={};
+  ns.forEach(s=>{if(s.newsName){const k=s.newsName.toUpperCase().trim();if(!eventMap[k])eventMap[k]={total:0,held:0,broke:0,exec:0};eventMap[k].total++;if(s.newsVerdict&&s.newsVerdict.includes('Confirmed'))eventMap[k].held++;if(s.newsVerdict&&s.newsVerdict.includes('Broke'))eventMap[k].broke++;if(s.exec==='A+'||s.exec==='A')eventMap[k].exec++;}});
+  const events=Object.entries(eventMap).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('news-event-breakdown').innerHTML=events.length?events.map(([name,d])=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="font-family:var(--fm);font-size:11px;color:var(--gold);width:80px;flex-shrink:0">${name}</div>
+      <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <div style="text-align:center"><div style="font-family:var(--fm);font-size:8px;color:var(--muted2)">SESSIONS</div><div style="font-family:var(--fm);font-size:13px;color:var(--white)">${d.total}</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fm);font-size:8px;color:var(--muted2)">HELD UP</div><div style="font-family:var(--fm);font-size:13px;color:var(--green3)">${pct(d.held,d.total)}</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fm);font-size:8px;color:var(--muted2)">BROKE IT</div><div style="font-family:var(--fm);font-size:13px;color:var(--red3)">${pct(d.broke,d.total)}</div></div>
+        <div style="text-align:center"><div style="font-family:var(--fm);font-size:8px;color:var(--muted2)">A/A+ EXEC</div><div style="font-family:var(--fm);font-size:13px;color:var(--blue3)">${pct(d.exec,d.total)}</div></div>
+      </div>
+    </div>`).join(''):'<div style="font-size:10px;color:var(--muted2);font-family:var(--fm)">no named events yet</div>';
+
+  // Full session log
+  const verdictColor={'Confirmed — model held up':'var(--green3)','Broke it — news overrode structure':'var(--red3)','Mixed — partial delivery':'var(--orange3)','N/A — no news this session':'var(--muted2)'};
+  document.getElementById('news-session-log').innerHTML=ns.map(s=>`
+    <div class="bc">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-family:var(--fd);font-size:13px;color:var(--gold);font-style:italic">${s.date||'No date'} · ${s.session||'–'}</div>
+          <div style="font-family:var(--fm);font-size:10px;color:var(--gold);margin-top:3px">${s.newsName||'Unknown event'} ${s.newsTime?'@ '+s.newsTime:''}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--fm);font-size:9px;color:${verdictColor[s.newsVerdict]||'var(--cream)'};letter-spacing:.5px">${s.newsVerdict||'–'}</div>
+          ${s.exec?`<div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-top:3px">exec: ${s.exec}</div>`:''}
+        </div>
+      </div>
+      ${s.newsPosition?`<div style="font-family:var(--fm);font-size:9px;color:var(--muted2);margin-bottom:4px">${s.newsPosition}</div>`:''}
+      ${s.newsEffect?`<div style="font-family:var(--fm);font-size:9px;color:var(--cream);margin-bottom:6px">${s.newsEffect}</div>`:''}
+      ${s.newsNotes?`<div style="font-size:11px;color:var(--muted2);line-height:1.5;font-style:italic">${s.newsNotes}</div>`:''}
+    </div>`).join('');
+}
+
+function refreshAll(){renderDash();renderBiasList();renderCal();renderWeeklyList();}
+updProg();loadData();
+</script>
+</body>
+</html>
